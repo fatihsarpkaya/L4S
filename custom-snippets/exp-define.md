@@ -1,5 +1,5 @@
 ::: {.cell .markdown}
-### Define configuration for this experiment (example)
+### Define configuration for this experiment
 :::
 
 ::: {.cell .code}
