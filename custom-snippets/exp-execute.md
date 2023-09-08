@@ -48,7 +48,10 @@ exp_factors = {
     'ecn_threshold': [5, 20],
     'ecn_fallback': [0, 1], # 0: OFF, 1: ON
     'rx0_ecn': [0, 1, 2], #0: noecn, 1:ecn, 2:accecn
-    'rx1_ecn': [0, 1, 2]  #0: noecn, 1:ecn, 2:accecn
+    'rx1_ecn': [0, 1, 2],  #0: noecn, 1:ecn, 2:accecn
+    'cc_tx0' : ["prague"],
+    'cc_tx1' : ["cubic"],
+    'trial': [1]
 
 }
 
@@ -62,7 +65,6 @@ for factor_l in factor_lists:
         del temp_dict['ecn_threshold']
     exp_lists.append(temp_dict)
 
-#data_dir = slice_name + 'singlebottleneck'
 data_dir_tx0 = slice_name + 'singlebottleneck'+"-tx0"
 data_dir_tx1 = slice_name + 'singlebottleneck'+"-tx1"
 
@@ -96,24 +98,23 @@ for exp in exp_lists:
 
     # check if we already ran this experiment
     # (allow stop/resume)
-    name_prague="%s_%0.1f_%d_%d_%s_%s_%d_%d_%d" % ("prague",exp['n_bdp'], exp['btl_capacity'], exp['base_rtt'], exp['aqm'], str(exp.get('ecn_threshold', 'none')), exp['ecn_fallback'], exp['rx0_ecn'], exp['rx1_ecn'])
-    name_cubic="%s_%0.1f_%d_%d_%s_%s_%d_%d_%d" % ("cubic",exp['n_bdp'], exp['btl_capacity'], exp['base_rtt'], exp['aqm'], str(exp.get('ecn_threshold', 'none')), exp['ecn_fallback'], exp['rx0_ecn'], exp['rx1_ecn'])
+    name_tx0="%s_%0.1f_%d_%d_%s_%s_%d_%d_%d" % (exp['cc_tx0'],exp['n_bdp'], exp['btl_capacity'], exp['base_rtt'], exp['aqm'], str(exp.get('ecn_threshold', 'none')), exp['ecn_fallback'], exp['rx0_ecn'], exp['rx1_ecn'])
+    name_tx1="%s_%0.1f_%d_%d_%s_%s_%d_%d_%d" % (exp['cc_tx1'],"cubic",exp['n_bdp'], exp['btl_capacity'], exp['base_rtt'], exp['aqm'], str(exp.get('ecn_threshold', 'none')), exp['ecn_fallback'], exp['rx0_ecn'], exp['rx1_ecn'])
     
-    file_out_tx0_json = name_prague+"-result.json"
-    file_out_tx0_ss = name_prague+"-ss.txt"
+    file_out_tx0_json = name_tx0+"-result.json"
+    file_out_tx0_ss = name_tx0+"-ss.txt"
     stdout_tx0_json, stderr_tx0_json = tx0_node.execute("ls " + file_out_tx0_json, quiet=True) 
     stdout_tx0_ss, stderr_tx0_ss = tx0_node.execute("ls " + file_out_tx0_ss, quiet=True)
     
-    file_out_tx1_json =name_cubic+"-result.json"
-    file_out_tx1_ss = name_cubic+"-ss.txt"
+    file_out_tx1_json =name_tx1+"-result.json"
+    file_out_tx1_ss = name_tx1+"-ss.txt"
     stdout_tx1_json, stderr_tx1_json = tx1_node.execute("ls " + file_out_tx1_json, quiet=True) 
     stdout_tx1_ss, stderr_tx1_ss = tx1_node.execute("ls " + file_out_tx1_ss, quiet=True) 
 
     if len(stdout_tx0_json) and len(stdout_tx0_ss) and len(stdout_tx1_json) and len(stdout_tx1_ss):
         print("Already have " + name_prague + " and "+ name_cubic + ", skipping")
 
-    #elif len(stderr):
-    else:
+    elif len(stderr_tx0_json) or len(stderr_tx0_ss) or len(stderr_tx1_json) or len(stderr_tx1_ss):
         print("Running experiment to generate " + name_prague + " and "+ name_cubic) 
         
         # delay at emulator
@@ -193,10 +194,6 @@ for exp in exp_lists:
             '''.format(iface=router_egress_name, capacity=exp['btl_capacity'], threshold=exp['ecn_threshold'])
             router_node.execute(cmds)
             
-    
-        #starting experiment
-        #name_prague="/%s_%0.1f_%d_%d_%s_%s_%s_%s_%s.txt" % ("prague",exp['n_bdp'], exp['btl_capacity'], exp['base_rtt'], exp['aqm'], str(exp.get('ecn_threshold', 'none')), exp['ecn_fallback'], exp['rx0_ecn'], exp['rx1_ecn'])
-        #name_cubic="/%s_%0.1f_%d_%d_%s_%s_%s_%s_%s.txt" % ("cubic",exp['n_bdp'], exp['btl_capacity'], exp['base_rtt'], exp['aqm'], str(exp.get('ecn_threshold', 'none')), exp['ecn_fallback'], exp['rx0_ecn'], exp['rx1_ecn'])
 
         rx0_node.execute("killall iperf3")
         rx1_node.execute("killall iperf3")
@@ -209,32 +206,14 @@ for exp in exp_lists:
         rx0_node.execute("iperf3 -s -1 -p 4000 -D")
         rx1_node.execute("iperf3 -s -1 -p 5000 -D")
         
-        tx0_node.execute_thread(ss_tx0_script.format(flow=name_prague, duration=d))
-        tx1_node.execute_thread(ss_tx1_script.format(flow=name_cubic, duration=d))
+        tx0_node.execute_thread(ss_tx0_script.format(flow=name_tx0, duration=d))
+        tx1_node.execute_thread(ss_tx1_script.format(flow=name_tx1, duration=d))
         
-        tx0_node.execute_thread("sleep 1; iperf3 -c 10.0.3.100 -t {duration} -P {flows} -C prague -p 4000 -J > {flow}-result.json".format(flow =name_prague, duration=d, flows=1))
-        stdout, stderr = tx1_node.execute("sleep 1; iperf3 -c 10.0.4.100 -t {duration} -P {flows} -C cubic -p 5000 -J > {flow}-result.json".format(flow =name_cubic, duration=d, flows=1))
+        tx0_node.execute_thread("sleep 1; iperf3 -c 10.0.3.100 -t {duration} -P {flows} -C {cc} -p 4000 -J > {flow}-result.json".format(flow =name_tx0, duration=d, flows=1, cc=exp['cc_tx0']))
+        stdout, stderr = tx1_node.execute("sleep 1; iperf3 -c 10.0.4.100 -t {duration} -P {flows} -C {cc} -p 5000 -J > {flow}-result.json".format(flow =name_tx1, duration=d, flows=1, cc=exp['cc_tx1']))
         time.sleep(3)
         
-        break
         
-tx0_node.execute('rm -r '+data_dir_tx0)
-tx0_node.execute('mkdir '+data_dir_tx0)
-
-tx0_node.execute('mv *.json '+ data_dir_tx0)
-tx0_node.execute('mv *.txt '+ data_dir_tx0)
-        
-tx0_node.execute('tar -czvf '+data_dir_tx0+ '.tgz ' +  data_dir_tx0)
-tx0_node.download_file(data_dir_tx0+'.tgz ', '/home/ubuntu/' + data_dir_tx0+ '.tgz')
-
-tx1_node.execute('rm -r '+data_dir_tx1)
-tx1_node.execute('mkdir '+data_dir_tx1)
-
-tx1_node.execute('mv *.json '+ data_dir_tx1)
-tx1_node.execute('mv *.txt '+ data_dir_tx1)
-        
-tx1_node.execute('tar -czvf '+data_dir_tx1+ '.tgz ' +  data_dir_tx1)
-tx1_node.download_file(data_dir_tx1+'.tgz ', '/home/ubuntu/' + data_dir_tx1+ '.tgz')
 ```
 :::
 
