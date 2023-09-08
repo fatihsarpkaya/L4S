@@ -12,7 +12,7 @@ rx0_node = slice.get_node(name="rx0")
 rx1_node = slice.get_node(name="rx1")
 delay_node = slice.get_node(name="delay")
 router_node = slice.get_node(name="router")
-
+switch_node = slice.get_node(name="switch")
 # interfaces
 
 tx0_egress_iface  = tx0_node.get_interface(network_name = "net-tx0")
@@ -26,11 +26,8 @@ delay_ingress_tx1_name = delay_ingress_tx1_iface.get_device_name()
 delay_egress_name = delay_egress_iface.get_device_name()
 
 router_ingress_iface  = router_node.get_interface(network_name = "net-delay-router")
-router_egress_rx0_iface  = router_node.get_interface(network_name = "net-rx0")
-router_egress_rx1_iface  = router_node.get_interface(network_name = "net-rx1")
-
-router_egress_rx0_name  = router_egress_rx0_iface.get_device_name()
-router_egress_rx1_name  = router_egress_rx1_iface.get_device_name()
+router_egress_iface  = router_node.get_interface(network_name = "net-router-switch")
+router_egress_name  = router_egress_iface.get_device_name()
 
 
 rx0_ingress_iface  = rx0_node.get_interface(network_name = "net-rx0")
@@ -134,7 +131,7 @@ for exp in exp_lists:
             sudo tc qdisc replace dev {iface} root handle 1: htb default 3 
             sudo tc class add dev {iface} parent 1: classid 1:3 htb rate {capacity}mbit 
             sudo tc qdisc add dev {iface} parent 1:3 handle 3: bfifo limit {buffer} 
-            '''.format(iface=router_ingress_name, capacity=exp['btl_capacity'], buffer=btl_limit)
+            '''.format(iface=router_egress_name, capacity=exp['btl_capacity'], buffer=btl_limit)
             router_node.execute(cmds)
         
         elif exp['aqm']=='single queue FQ':
