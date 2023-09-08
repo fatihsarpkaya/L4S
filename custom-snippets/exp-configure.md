@@ -13,7 +13,7 @@ pkg_list = ['iproute2_5.10.0-1_amd64.deb',
             'linux-libc-dev_1_amd64.deb']
 for node in slice.get_nodes():
 	for pkg in pkg_list:
-	    node.upload_file("/home/fabric/work/setup/" + pkg, "/home/ubuntu/" + pkg)
+	    node.upload_file("/home/fabric/work/debian_build/" + pkg, "/home/ubuntu/" + pkg)
 	node.execute("sudo dpkg -i " + " ".join(pkg_list) + "; sudo reboot")
 
 # wait for all nodes to come back up
