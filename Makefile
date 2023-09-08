@@ -10,9 +10,9 @@ single_bottleneck.ipynb: $(SNIPPETS)
                 custom-snippets/exp-define.md \
                 fabric-snippets/reserve-resources.md \
 		fabric-snippets/extend.md \
+                custom-snippets/exp-configure.md \
                 fabric-snippets/configure-resources.md \
                 fabric-snippets/offload-off.md \
-		custom-snippets/exp-configure.md \
                 fabric-snippets/draw-topo-detailed-labels.md \
 		fabric-snippets/log-in.md \
                 custom-snippets/exp-execute.md \
