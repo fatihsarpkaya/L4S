@@ -5,7 +5,7 @@
 
 ::: {.cell .code}
 ```python
- installing the kernel
+#installing the kernel
 pkg_list = ['iproute2_5.10.0-1_amd64.deb',
             'iproute2-doc_5.10.0-1_all.deb',
             'linux-headers-5.15.72-43822a283-prague-43_1_amd64.deb',
