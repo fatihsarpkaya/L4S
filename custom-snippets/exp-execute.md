@@ -62,7 +62,10 @@ for factor_l in factor_lists:
         del temp_dict['ecn_threshold']
     exp_lists.append(temp_dict)
 
-data_dir = slice_name + 'singlebottleneck'
+#data_dir = slice_name + 'singlebottleneck'
+data_dir_tx0 = slice_name + 'singlebottleneck'+"-tx0"
+data_dir_tx1 = slice_name + 'singlebottleneck'+"-tx1"
+
 print("Number of experiments:",len(exp_lists))
 ```
 :::
@@ -93,23 +96,30 @@ for exp in exp_lists:
 
     # check if we already ran this experiment
     # (allow stop/resume)
-    name_prague="%s_%0.1f_%d_%d_%s_%s_%d_%d_%d.txt" % ("prague",exp['n_bdp'], exp['btl_capacity'], exp['base_rtt'], exp['aqm'], str(exp.get('ecn_threshold', 'none')), exp['ecn_fallback'], exp['rx0_ecn'], exp['rx1_ecn'])
-    name_cubic="%s_%0.1f_%d_%d_%s_%s_%d_%d_%d.txt" % ("cubic",exp['n_bdp'], exp['btl_capacity'], exp['base_rtt'], exp['aqm'], str(exp.get('ecn_threshold', 'none')), exp['ecn_fallback'], exp['rx0_ecn'], exp['rx1_ecn'])
+    name_prague="%s_%0.1f_%d_%d_%s_%s_%d_%d_%d" % ("prague",exp['n_bdp'], exp['btl_capacity'], exp['base_rtt'], exp['aqm'], str(exp.get('ecn_threshold', 'none')), exp['ecn_fallback'], exp['rx0_ecn'], exp['rx1_ecn'])
+    name_cubic="%s_%0.1f_%d_%d_%s_%s_%d_%d_%d" % ("cubic",exp['n_bdp'], exp['btl_capacity'], exp['base_rtt'], exp['aqm'], str(exp.get('ecn_threshold', 'none')), exp['ecn_fallback'], exp['rx0_ecn'], exp['rx1_ecn'])
     
-    file_out = data_dir_tx0 + "-"+ name_prague
-    stdout, stderr = tx0_node.execute("ls " + file_out, quiet=True) # run this on the node that saves the output file #write 4 lines
+    file_out_tx0_json = name_prague+"-result.json"
+    file_out_tx0_ss = name_prague+"-ss.txt"
+    stdout_tx0_json, stderr_tx0_json = tx0_node.execute("ls " + file_out_tx0_json, quiet=True) 
+    stdout_tx0_ss, stderr_tx0_ss = tx0_node.execute("ls " + file_out_tx0_ss, quiet=True)
+    
+    file_out_tx1_json =name_cubic+"-result.json"
+    file_out_tx1_ss = name_cubic+"-ss.txt"
+    stdout_tx1_json, stderr_tx1_json = tx1_node.execute("ls " + file_out_tx1_json, quiet=True) 
+    stdout_tx1_ss, stderr_tx1_ss = tx1_node.execute("ls " + file_out_tx1_ss, quiet=True) 
 
-    if len(stdout):
-        print("Already have " + file_out + ", skipping")
+    if len(stdout_tx0_json) and len(stdout_tx0_ss) and len(stdout_tx1_json) and len(stdout_tx1_ss):
+        print("Already have " + name_prague + " and "+ name_cubic + ", skipping")
 
-    elif len(stderr):
-        print("Running experiment to generate " + file_out) 
+    #elif len(stderr):
+    else:
+        print("Running experiment to generate " + name_prague + " and "+ name_cubic) 
         
         # delay at emulator
         for e in em:
             cmds = "sudo tc qdisc replace dev {iface} root netem delay {owd}ms limit 60000".format(iface=e, owd=exp['base_rtt']/2)
             delay_node.execute(cmds)
-            print("successfull")
         
         # fixed values
         btl_limit    = int(1000*exp['n_bdp']*exp['btl_capacity']*2*exp['base_rtt']/8) # limit of the bottleneck, n_bdp x BDP in bytes 
