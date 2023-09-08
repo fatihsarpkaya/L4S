@@ -63,6 +63,7 @@ for factor_l in factor_lists:
     exp_lists.append(temp_dict)
 
 data_dir = slice_name + 'singlebottleneck'
+print("Number of experiments:",len(exp_lists))
 ```
 :::
 
