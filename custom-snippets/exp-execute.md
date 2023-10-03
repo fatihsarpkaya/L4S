@@ -41,11 +41,11 @@ rx1_ingress_iface  = rx1_node.get_interface(network_name = "net-rx1")
 import itertools
 
 exp_factors = { 
-    'n_bdp': [0.5, 2, 5, 10], # n x bandwidth delay product
-    'btl_capacity': [100, 1000],
-    'base_rtt': [10, 50, 100],
-    'aqm': ['FIFO', 'single queue FQ', 'Codel', 'FQ', 'FQ_Codel', 'DualPI2'],
-    'ecn_threshold': [5, 20],
+    'n_bdp': [2], #'n_bdp': [0.5, 2, 5, 10], # n x bandwidth delay product
+    'btl_capacity': [100], #'btl_capacity': [100, 1000],
+    'base_rtt': [10], #'base_rtt': [10, 50, 100],
+    'aqm': ['FIFO', 'single_queue_FQ', 'Codel', 'FQ', 'FQ_Codel', 'DualPI2'],
+    'ecn_threshold': [5], #'ecn_threshold': [5, 20],
     'ecn_fallback': [0, 1], # 0: OFF, 1: ON
     'rx0_ecn': [0, 1, 2], #0: noecn, 1:ecn, 2:accecn
     'rx1_ecn': [0, 1, 2],  #0: noecn, 1:ecn, 2:accecn
@@ -211,7 +211,7 @@ for exp in exp_lists:
         
         tx0_node.execute_thread("sleep 1; iperf3 -c 10.0.3.100 -t {duration} -P {flows} -C {cc} -p 4000 -J > {flow}-result.json".format(flow =name_tx0, duration=d, flows=1, cc=exp['cc_tx0']))
         stdout, stderr = tx1_node.execute("sleep 1; iperf3 -c 10.0.4.100 -t {duration} -P {flows} -C {cc} -p 5000 -J > {flow}-result.json".format(flow =name_tx1, duration=d, flows=1, cc=exp['cc_tx1']))
-        time.sleep(3)
+        time.sleep(3)  # time.sleep(1)
         
         
 ```
