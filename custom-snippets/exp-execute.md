@@ -99,7 +99,7 @@ for exp in exp_lists:
     # check if we already ran this experiment
     # (allow stop/resume)
     name_tx0="%s_%0.1f_%d_%d_%s_%s_%d_%d_%d" % (exp['cc_tx0'],exp['n_bdp'], exp['btl_capacity'], exp['base_rtt'], exp['aqm'], str(exp.get('ecn_threshold', 'none')), exp['ecn_fallback'], exp['rx0_ecn'], exp['rx1_ecn'])
-    name_tx1="%s_%0.1f_%d_%d_%s_%s_%d_%d_%d" % (exp['cc_tx1'],"cubic",exp['n_bdp'], exp['btl_capacity'], exp['base_rtt'], exp['aqm'], str(exp.get('ecn_threshold', 'none')), exp['ecn_fallback'], exp['rx0_ecn'], exp['rx1_ecn'])
+    name_tx1="%s_%0.1f_%d_%d_%s_%s_%d_%d_%d" % (exp['cc_tx1'],exp['n_bdp'], exp['btl_capacity'], exp['base_rtt'], exp['aqm'], str(exp.get('ecn_threshold', 'none')), exp['ecn_fallback'], exp['rx0_ecn'], exp['rx1_ecn'])
     
     file_out_tx0_json = name_tx0+"-result.json"
     file_out_tx0_ss = name_tx0+"-ss.txt"
@@ -112,10 +112,10 @@ for exp in exp_lists:
     stdout_tx1_ss, stderr_tx1_ss = tx1_node.execute("ls " + file_out_tx1_ss, quiet=True) 
 
     if len(stdout_tx0_json) and len(stdout_tx0_ss) and len(stdout_tx1_json) and len(stdout_tx1_ss):
-        print("Already have " + name_prague + " and "+ name_cubic + ", skipping")
+        print("Already have " + name_tx0 + " and "+ name_tx1 + ", skipping")
 
     elif len(stderr_tx0_json) or len(stderr_tx0_ss) or len(stderr_tx1_json) or len(stderr_tx1_ss):
-        print("Running experiment to generate " + name_prague + " and "+ name_cubic) 
+        print("Running experiment to generate " + name_tx0 + " and "+ name_tx1) 
         
         # delay at emulator
         for e in em:
