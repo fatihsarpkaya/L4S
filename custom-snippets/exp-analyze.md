@@ -14,7 +14,7 @@ for exp in exp_lists:
     stdout_tx0_csv, stderr_tx0_csv = tx0_node.execute("ls " + file_out_tx0_csv, quiet=True) 
     
     file_out_tx1_csv = name_tx1+"-ss.csv"
-    stdout_tx1csv, stderr_tx1_csv = tx0_node.execute("ls " + file_out_tx1_csv, quiet=True) 
+    stdout_tx1_csv, stderr_tx1_csv = tx1_node.execute("ls " + file_out_tx1_csv, quiet=True) 
 
     if len(stdout_tx0_csv) and len(stdout_tx1_csv):
         print("Already have " + name_tx0 + " and "+ name_tx1 + ", skipping")
@@ -30,34 +30,34 @@ for exp in exp_lists:
 
 
     
-    ss_tx0_script_processing="""
-    
-    f_1={types}; 
-    rm -f ${{f_1}}-ss.csv;
-    cat ${{f_1}}-ss.txt | sed -e ":a; /<->$/ {{ N; s/<->\\n//; ba; }}"  | grep "iperf3" | grep -v "SYN-SENT"> ${{f_1}}-ss-processed.txt; 
-    cat ${{f_1}}-ss-processed.txt | awk '{{print $1}}' > ts-${{f_1}}.txt; 
-    cat ${{f_1}}-ss-processed.txt | grep -oP '\\bcwnd:.*?(\s|$)' | awk -F '[:,]' '{{print $2}}' | tr -d ' ' > cwnd-${{f_1}}.txt; 
-    cat ${{f_1}}-ss-processed.txt | grep -oP '\\brtt:.*?(\s|$)' | awk -F '[:,]' '{{print $2}}' | tr -d ' '  | cut -d '/' -f 1   > srtt-${{f_1}}.txt; 
-    cat ${{f_1}}-ss-processed.txt | grep -oP '\\bfd=.*?(\s|$)' | awk -F '[=,]' '{{print $2}}' | tr -d ')' | tr -d ' '   > fd-${{f_1}}.txt;
-    paste ts-${{f_1}}.txt fd-${{f_1}}.txt cwnd-${{f_1}}.txt srtt-${{f_1}}.txt -d ',' > ${{f_1}}-ss.csv;""".format(types=name_tx0)
+        ss_tx0_script_processing="""
+
+        f_1={types}; 
+        rm -f ${{f_1}}-ss.csv;
+        cat ${{f_1}}-ss.txt | sed -e ":a; /<->$/ {{ N; s/<->\\n//; ba; }}"  | grep "iperf3" | grep -v "SYN-SENT"> ${{f_1}}-ss-processed.txt; 
+        cat ${{f_1}}-ss-processed.txt | awk '{{print $1}}' > ts-${{f_1}}.txt; 
+        cat ${{f_1}}-ss-processed.txt | grep -oP '\\bcwnd:.*?(\s|$)' | awk -F '[:,]' '{{print $2}}' | tr -d ' ' > cwnd-${{f_1}}.txt; 
+        cat ${{f_1}}-ss-processed.txt | grep -oP '\\brtt:.*?(\s|$)' | awk -F '[:,]' '{{print $2}}' | tr -d ' '  | cut -d '/' -f 1   > srtt-${{f_1}}.txt; 
+        cat ${{f_1}}-ss-processed.txt | grep -oP '\\bfd=.*?(\s|$)' | awk -F '[=,]' '{{print $2}}' | tr -d ')' | tr -d ' '   > fd-${{f_1}}.txt;
+        paste ts-${{f_1}}.txt fd-${{f_1}}.txt cwnd-${{f_1}}.txt srtt-${{f_1}}.txt -d ',' > ${{f_1}}-ss.csv;""".format(types=name_tx0)
      
     
-    tx0_node.execute(ss_tx0_script_processing)
-    
-    
-    ss_tx1_script_processing="""
-    
-    f_2={types};
-    rm -f ${{f_2}}-ss.csv;
-    cat ${{f_2}}-ss.txt | sed -e ":a; /<->$/ {{ N; s/<->\\n//; ba; }}"  | grep "iperf3" | grep -v "SYN-SENT" > ${{f_2}}-ss-processed.txt; 
-    cat ${{f_2}}-ss-processed.txt | awk '{{print $1}}' > ts-${{f_2}}.txt; 
-    cat ${{f_2}}-ss-processed.txt | grep -oP '\\bcwnd:.*?(\s|$)' |  awk -F '[:,]' '{{print $2}}' | tr -d ' ' > cwnd-${{f_2}}.txt; 
-    cat ${{f_2}}-ss-processed.txt | grep -oP '\\brtt:.*?(\s|$)' |  awk -F '[:,]' '{{print $2}}' | tr -d ' '  | cut -d '/' -f 1   > srtt-${{f_2}}.txt; 
-    cat ${{f_2}}-ss-processed.txt | grep -oP '\\bfd=.*?(\s|$)' |  awk -F '[=,]' '{{print $2}}' | tr -d ')' | tr -d ' '   > fd-${{f_2}}.txt;
-    paste ts-${{f_2}}.txt fd-${{f_2}}.txt cwnd-${{f_2}}.txt srtt-${{f_2}}.txt -d ',' > ${{f_2}}-ss.csv;""".format(types=name_tx1)
+        tx0_node.execute(ss_tx0_script_processing)
 
 
-    tx1_node.execute(ss_tx1_script_processing)
+        ss_tx1_script_processing="""
+
+        f_2={types};
+        rm -f ${{f_2}}-ss.csv;
+        cat ${{f_2}}-ss.txt | sed -e ":a; /<->$/ {{ N; s/<->\\n//; ba; }}"  | grep "iperf3" | grep -v "SYN-SENT" > ${{f_2}}-ss-processed.txt; 
+        cat ${{f_2}}-ss-processed.txt | awk '{{print $1}}' > ts-${{f_2}}.txt; 
+        cat ${{f_2}}-ss-processed.txt | grep -oP '\\bcwnd:.*?(\s|$)' |  awk -F '[:,]' '{{print $2}}' | tr -d ' ' > cwnd-${{f_2}}.txt; 
+        cat ${{f_2}}-ss-processed.txt | grep -oP '\\brtt:.*?(\s|$)' |  awk -F '[:,]' '{{print $2}}' | tr -d ' '  | cut -d '/' -f 1   > srtt-${{f_2}}.txt; 
+        cat ${{f_2}}-ss-processed.txt | grep -oP '\\bfd=.*?(\s|$)' |  awk -F '[=,]' '{{print $2}}' | tr -d ')' | tr -d ' '   > fd-${{f_2}}.txt;
+        paste ts-${{f_2}}.txt fd-${{f_2}}.txt cwnd-${{f_2}}.txt srtt-${{f_2}}.txt -d ',' > ${{f_2}}-ss.csv;""".format(types=name_tx1)
+
+
+        tx1_node.execute(ss_tx1_script_processing)
 
     #tx0_node.download_file("/home/fabric/work/{f_type}-ss.csv".format(f_type=name_prague),"/home/ubuntu/{f_type}-ss.csv".format(f_type=name_prague))
     #tx1_node.download_file("/home/fabric/work/{f_type}-ss.csv".format(f_type=name_cubic),"/home/ubuntu/{f_type}-ss.csv".format(f_type=name_cubic))
@@ -72,7 +72,8 @@ tx0_node.execute('mv *.txt '+ data_dir_tx0)
 tx0_node.execute('mv *.csv '+ data_dir_tx0)
 
 tx0_node.execute('tar -czvf '+data_dir_tx0+ '.tgz ' +  data_dir_tx0)
-tx0_node.download_file(data_dir_tx0+'.tgz ', '/home/ubuntu/' + data_dir_tx0+ '.tgz')
+#tx0_node.download_file(data_dir_tx0+'.tgz ', '/home/ubuntu/' + data_dir_tx0+ '.tgz')
+
 
 tx1_node.execute('rm -r '+data_dir_tx1)
 tx1_node.execute('mkdir '+data_dir_tx1)
@@ -82,7 +83,7 @@ tx1_node.execute('mv *.txt '+ data_dir_tx1)
 tx1_node.execute('mv *.csv '+ data_dir_tx1)
         
 tx1_node.execute('tar -czvf '+data_dir_tx1+ '.tgz ' +  data_dir_tx1)
-tx1_node.download_file(data_dir_tx1+'.tgz ', '/home/ubuntu/' + data_dir_tx1+ '.tgz')
+#tx1_node.download_file(data_dir_tx1+'.tgz ', '/home/ubuntu/' + data_dir_tx1+ '.tgz')
 ```
 :::
 

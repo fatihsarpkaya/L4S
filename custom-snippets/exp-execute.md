@@ -76,7 +76,7 @@ print("Number of experiments:",len(exp_lists))
 ```python
 # run experiments
 import time
-d = 2 #duration in seconds
+d = 60 #duration in seconds
 
 em = [delay_ingress_tx0_name, delay_ingress_tx1_name, delay_egress_name]
 
@@ -212,6 +212,8 @@ for exp in exp_lists:
         tx0_node.execute_thread("sleep 1; iperf3 -c 10.0.3.100 -t {duration} -P {flows} -C {cc} -p 4000 -J > {flow}-result.json".format(flow =name_tx0, duration=d, flows=1, cc=exp['cc_tx0']))
         stdout, stderr = tx1_node.execute("sleep 1; iperf3 -c 10.0.4.100 -t {duration} -P {flows} -C {cc} -p 5000 -J > {flow}-result.json".format(flow =name_tx1, duration=d, flows=1, cc=exp['cc_tx1']))
         time.sleep(3)  # time.sleep(1)
+        
+print("finished")
         
         
 ```
