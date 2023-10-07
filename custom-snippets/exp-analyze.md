@@ -64,7 +64,7 @@ for exp in exp_lists:
 
 
 
-tx0_node.execute('rm -r '+data_dir_tx0)
+#tx0_node.execute('rm -r '+data_dir_tx0)
 tx0_node.execute('mkdir '+data_dir_tx0)
 
 tx0_node.execute('mv *.json '+ data_dir_tx0)
@@ -75,7 +75,7 @@ tx0_node.execute('tar -czvf '+data_dir_tx0+ '.tgz ' +  data_dir_tx0)
 #tx0_node.download_file(data_dir_tx0+'.tgz ', '/home/ubuntu/' + data_dir_tx0+ '.tgz')
 
 
-tx1_node.execute('rm -r '+data_dir_tx1)
+#tx1_node.execute('rm -r '+data_dir_tx1)
 tx1_node.execute('mkdir '+data_dir_tx1)
 
 tx1_node.execute('mv *.json '+ data_dir_tx1)

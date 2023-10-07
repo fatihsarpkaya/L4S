@@ -41,29 +41,37 @@ rx1_ingress_iface  = rx1_node.get_interface(network_name = "net-rx1")
 import itertools
 
 exp_factors = { 
-    'n_bdp': [2], #'n_bdp': [0.5, 2, 5, 10], # n x bandwidth delay product
-    'btl_capacity': [100], #'btl_capacity': [100, 1000],
-    'base_rtt': [10], #'base_rtt': [10, 50, 100],
-    'aqm': ['FIFO', 'single_queue_FQ', 'Codel', 'FQ', 'FQ_Codel', 'DualPI2'],
-    'ecn_threshold': [5], #'ecn_threshold': [5, 20],
+    'n_bdp': [0.5, 2, 5, 10], # n x bandwidth delay product
+    'btl_capacity': [100], # 'btl_capacity': [100, 1000],
+    'base_rtt': [10, 50, 100],
+    'aqm': ['FIFO'], # 'aqm': ['FIFO', 'single_queue_FQ', 'Codel', 'FQ', 'FQ_Codel', 'DualPI2'],
+    'ecn_threshold': [5, 20],
     'ecn_fallback': [0, 1], # 0: OFF, 1: ON
-    'rx0_ecn': [0, 1, 2], #0: noecn, 1:ecn, 2:accecn
-    'rx1_ecn': [0, 1, 2],  #0: noecn, 1:ecn, 2:accecn
+    'rx0_ecn': [0, 1, 2], # 0: noecn, 1: ecn, 2: accecn
+    'rx1_ecn': [0, 1, 2], # 0: noecn, 1: ecn, 2: accecn
     'cc_tx0' : ["prague"],
     'cc_tx1' : ["cubic"],
     'trial': [1]
-
 }
 
 factor_names = [k for k in exp_factors]
 factor_lists = list(itertools.product(*exp_factors.values()))
 
 exp_lists = []
+
+seen_combinations = set()
+
 for factor_l in factor_lists:
     temp_dict = dict(zip(factor_names, factor_l))
     if temp_dict['aqm'] == 'FIFO':
         del temp_dict['ecn_threshold']
-    exp_lists.append(temp_dict)
+    
+    # Convert dict to a frozenset for set operations
+    fs = frozenset(temp_dict.items())
+    
+    if fs not in seen_combinations:
+        seen_combinations.add(fs)
+        exp_lists.append(temp_dict)
 
 data_dir_tx0 = slice_name + 'singlebottleneck'+"-tx0"
 data_dir_tx1 = slice_name + 'singlebottleneck'+"-tx1"
