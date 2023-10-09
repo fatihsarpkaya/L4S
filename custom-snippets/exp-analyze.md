@@ -241,7 +241,7 @@ for exp in exp_lists:
             
         
 
-# Average the throughputs over all trials for each n_bdp
+# Average the throughputs over all trials for factor_x
 for xval, throughputs in relevant_data_tx0.items():
     relevant_data_tx0[xval] = np.mean(throughputs)
     
@@ -255,12 +255,12 @@ for xval, srtts in relevant_srtt_data_tx1.items():
     relevant_srtt_data_tx1[xval] = np.mean(srtts)
 
 
-# Sort BDP values
+# Sort values
 xvals = sorted(list(set(list(relevant_data_tx0.keys()) + list(relevant_data_tx1.keys()))))
 
 print(xvals)
 
-# Get throughputs for sorted BDP values
+# Get throughputs for sorted values
 throughputs_tx0 = [relevant_data_tx0.get(xval, 0) for xval in xvals]
 throughputs_tx1 = [relevant_data_tx1.get(xval, 0) for xval in xvals]
 
@@ -287,7 +287,7 @@ for bar in bar2:
     plt.text(bar.get_x() + bar.get_width()/2, height + 0.5, f"{height:.2f}", ha='center', va='bottom')
 
 # Label the bars and the x-axis
-plt.xlabel('n_bdp')
+plt.xlabel(factor_x)
 plt.ylabel('Average Throughput')
 plt.title('Average Throughput vs queue type for different flows')
 plt.xticks(index + bar_width/2, xvals)  # Positioning on the x axis
@@ -316,7 +316,7 @@ for bar in bar2:
     plt.text(bar.get_x() + bar.get_width()/2, height + 0.5, f"{height:.2f}", ha='center', va='bottom')
 
 # Label the bars and the x-axis
-plt.xlabel('n_bdp')
+plt.xlabel(factor_x)
 plt.ylabel('Average SRTT')
 plt.title('Average SRTT vs queue type for different flows')
 plt.xticks(index + bar_width/2, xvals)  # Positioning on the x axis
