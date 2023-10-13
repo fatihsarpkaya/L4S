@@ -42,9 +42,9 @@ import itertools
 
 exp_factors = { 
     'n_bdp': [0.5, 2, 5, 10], # n x bandwidth delay product
-    'btl_capacity': [100], # 'btl_capacity': [100, 1000],
+    'btl_capacity': [100, 1000],
     'base_rtt': [10, 50, 100],
-    'aqm': ['FIFO'], # 'aqm': ['FIFO', 'single_queue_FQ', 'Codel', 'FQ', 'FQ_Codel', 'DualPI2'],
+    'aqm': ['FIFO', 'single_queue_FQ', 'Codel', 'FQ', 'FQ_Codel', 'DualPI2'],
     'ecn_threshold': [5, 20],
     'ecn_fallback': [0, 1], # 0: OFF, 1: ON
     'rx0_ecn': [0, 1, 2], # 0: noecn, 1: ecn, 2: accecn
@@ -154,7 +154,7 @@ for exp in exp_lists:
             '''.format(iface=router_egress_name, capacity=exp['btl_capacity'], buffer=btl_limit)
             router_node.execute(cmds)
         
-        elif exp['aqm']=='single queue FQ':
+        elif exp['aqm']=='single_queue_FQ':
             cmds = '''
             sudo tc qdisc del dev {iface} root
             sudo tc qdisc replace dev {iface} root handle 1: htb default 3

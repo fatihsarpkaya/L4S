@@ -33,5 +33,16 @@ slice.get_node(name="tx0").execute("sudo sysctl -w net.ipv4.tcp_ecn=3")
 
 slice.get_node(name="tx1").execute("sudo sysctl -w net.ipv4.tcp_congestion_control=cubic")
 slice.get_node(name="tx1").execute("sudo sysctl -w net.ipv4.tcp_ecn=1")
+
+
+#configuration for DUALPI2 bottleneck
+cmd_dualpi2="""sudo apt install -y git gcc make bison flex libdb-dev libelf-dev
+sudo git clone https://github.com/L4STeam/iproute2.git && cd iproute2
+sudo ./configure
+sudo make
+sudo make install"""
+slice.get_node(name="router").execute(cmd_dualpi2)
+
+
 ```
 :::

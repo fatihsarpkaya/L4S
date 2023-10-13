@@ -92,8 +92,8 @@ tx1_node.execute('tar -czvf '+data_dir_tx1+ '.tgz ' +  data_dir_tx1)
 import shutil, tarfile
 
 # remove previously stored data files
-shutil.rmtree(data_dir_tx0)
-shutil.rmtree(data_dir_tx1)
+#shutil.rmtree(data_dir_tx0)
+#shutil.rmtree(data_dir_tx1)
 
 # extract tar files 
 with tarfile.open(data_dir_tx0+'.tgz ', 'r:gz') as tar:
@@ -103,6 +103,12 @@ with tarfile.open(data_dir_tx1+'.tgz ', 'r:gz') as tar:
     tar.extractall()
 ```
 :::
+
+::: {.cell .markdown}
+### You can download the .tgz file from the node to the local machine and use plot_on_local_barplot.py file to see the results.
+:::
+
+
 
 ::: {.cell .code}
 ```python
