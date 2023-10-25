@@ -12,26 +12,23 @@ rx0_node = slice.get_node(name="rx0")
 rx1_node = slice.get_node(name="rx1")
 delay_node = slice.get_node(name="delay")
 router_node = slice.get_node(name="router")
-switch_node = slice.get_node(name="switch")
 # interfaces
 
-tx0_egress_iface  = tx0_node.get_interface(network_name = "net-tx0")
-tx1_egress_iface  = tx1_node.get_interface(network_name = "net-tx1")
+tx0_egress_iface  = tx0_node.get_interface(network_name = "net-tx")
+tx1_egress_iface  = tx1_node.get_interface(network_name = "net-tx")
 
-delay_ingress_tx0_iface  = delay_node.get_interface(network_name = "net-tx0")
-delay_ingress_tx1_iface  = delay_node.get_interface(network_name = "net-tx1")
+delay_ingress_tx_iface  = delay_node.get_interface(network_name = "net-tx")
 delay_egress_iface  = delay_node.get_interface(network_name = "net-delay-router")
-delay_ingress_tx0_name = delay_ingress_tx0_iface.get_device_name()
-delay_ingress_tx1_name = delay_ingress_tx1_iface.get_device_name()
+delay_ingress_tx_name = delay_ingress_tx_iface.get_device_name()
 delay_egress_name = delay_egress_iface.get_device_name()
 
 router_ingress_iface  = router_node.get_interface(network_name = "net-delay-router")
-router_egress_iface  = router_node.get_interface(network_name = "net-router-switch")
+router_egress_iface  = router_node.get_interface(network_name = "net-rx")
 router_egress_name  = router_egress_iface.get_device_name()
 
 
-rx0_ingress_iface  = rx0_node.get_interface(network_name = "net-rx0")
-rx1_ingress_iface  = rx1_node.get_interface(network_name = "net-rx1")
+rx0_ingress_iface  = rx0_node.get_interface(network_name = "net-rx")
+rx1_ingress_iface  = rx1_node.get_interface(network_name = "net-rx")
 ```
 :::
 
@@ -86,7 +83,7 @@ print("Number of experiments:",len(exp_lists))
 import time
 d = 60 #duration in seconds
 
-em = [delay_ingress_tx0_name, delay_ingress_tx1_name, delay_egress_name]
+em = [delay_ingress_tx_name, delay_egress_name]
 
 commands_noecn='''
 sudo sysctl -w net.ipv4.tcp_congestion_control=cubic  
@@ -145,64 +142,22 @@ for exp in exp_lists:
         rx1_node.execute(server_ecn_list[exp['rx1_ecn']])
         
         #aqm type selection
-        if exp['aqm']=='FIFO':
-            cmds = '''
+        cmd_prefix = '''
             sudo tc qdisc del dev {iface} root
             sudo tc qdisc replace dev {iface} root handle 1: htb default 3 
             sudo tc class add dev {iface} parent 1: classid 1:3 htb rate {capacity}mbit 
-            sudo tc qdisc add dev {iface} parent 1:3 handle 3: bfifo limit {buffer} 
             '''.format(iface=router_egress_name, capacity=exp['btl_capacity'], buffer=btl_limit)
-            router_node.execute(cmds)
-        
-        elif exp['aqm']=='single_queue_FQ':
-            cmds = '''
-            sudo tc qdisc del dev {iface} root
-            sudo tc qdisc replace dev {iface} root handle 1: htb default 3
-            sudo tc class add dev {iface} parent 1: classid 1:3 htb rate {capacity}mbit
-            sudo tc qdisc replace dev {iface} parent 1:3 handle 3: fq limit {packet_limit} flow_limit {packet_limit} orphan_mask 0 ce_threshold {threshold}ms
-            '''.format(iface=router_egress_name, capacity=exp['btl_capacity'], packet_limit=packet_number, threshold=exp['ecn_threshold'])
-            router_node.execute(cmds)
+        cmds_specific = {
+		'FIFO': "sudo tc qdisc add dev {iface} parent 1:3 handle 3: bfifo limit {buffer}".format(iface=router_egress_name, capacity=exp['btl_capacity'], buffer=btl_limit),
+		'single_queue_FQ': "sudo tc qdisc replace dev {iface} parent 1:3 handle 3: fq limit {packet_limit} flow_limit {packet_limit} orphan_mask 0 ce_threshold {threshold}ms".format(iface=router_egress_name, capacity=exp['btl_capacity'], packet_limit=packet_number, threshold=exp['ecn_threshold']),
+		'Codel': "sudo tc qdisc replace dev {iface} parent 1:3 handle 3: codel limit {packet_limit} target {target}ms interval 100ms ecn ce_threshold {threshold}ms".format(iface=router_egress_name, capacity=exp['btl_capacity'], packet_limit=packet_number, target=exp['base_rtt']*exp['n_bdp'], threshold=exp['ecn_threshold']),
+		'FQ': "sudo tc qdisc replace dev {iface} parent 1:3 handle 3: fq limit {packet_limit} flow_limit {packet_limit} ce_threshold {threshold}ms".format(iface=router_egress_name, capacity=exp['btl_capacity'], packet_limit=packet_number, threshold=exp['ecn_threshold']),
+		'FQ_Codel': "sudo tc qdisc replace dev {iface} parent 1:3 handle 3: fq_codel limit {packet_limit} target {target}ms interval 100ms ecn ce_threshold {threshold}ms".format(iface=router_egress_name, capacity=exp['btl_capacity'], packet_limit=packet_number, target=exp['base_rtt']*exp['n_bdp'], threshold=exp['ecn_threshold']),
+		'DualPI2': "sudo tc qdisc add dev {iface} parent 1:3 handle 3: dualpi2 target {threshold}ms".format(iface=router_egress_name, capacity=exp['btl_capacity'], threshold=exp['ecn_threshold'])
+        }
+        router_node.execute(cmds_prefix)
+        router_node.execute(cmds_specific[ exp['aqm'] ])
             
-            
-        elif exp['aqm']=='Codel':
-            cmds = '''
-            sudo tc qdisc del dev {iface} root
-            sudo tc qdisc replace dev {iface} root handle 1: htb default 3
-            sudo tc class add dev {iface} parent 1: classid 1:3 htb rate {capacity}mbit
-            sudo tc qdisc replace dev {iface} parent 1:3 handle 3: codel limit {packet_limit} target {target}ms interval 100ms ecn ce_threshold {threshold}ms
-            '''.format(iface=router_egress_name, capacity=exp['btl_capacity'], packet_limit=packet_number, target=exp['base_rtt']*exp['n_bdp'], threshold=exp['ecn_threshold'])
-            router_node.execute(cmds)
-            
-            
-        elif exp['aqm']=='FQ':
-            cmds = '''
-            sudo tc qdisc del dev {iface} root
-            sudo tc qdisc replace dev {iface} root handle 1: htb default 3
-            sudo tc class add dev {iface} parent 1: classid 1:3 htb rate {capacity}mbit
-            sudo tc qdisc replace dev {iface} parent 1:3 handle 3: fq limit {packet_limit} flow_limit {packet_limit} ce_threshold {threshold}ms
-            '''.format(iface=router_egress_name, capacity=exp['btl_capacity'], packet_limit=packet_number, threshold=exp['ecn_threshold'])
-            router_node.execute(cmds)
-            
-            
-        elif exp['aqm']=='FQ_Codel':
-            cmds = '''
-            sudo tc qdisc del dev {iface} root
-            sudo tc qdisc replace dev {iface} root handle 1: htb default 3
-            sudo tc class add dev {iface} parent 1: classid 1:3 htb rate {capacity}mbit
-            sudo tc qdisc replace dev {iface} parent 1:3 handle 3: fq_codel limit {packet_limit} target {target}ms interval 100ms ecn ce_threshold {threshold}ms
-            '''.format(iface=router_egress_name, capacity=exp['btl_capacity'], packet_limit=packet_number, target=exp['base_rtt']*exp['n_bdp'], threshold=exp['ecn_threshold'])
-            router_node.execute(cmds)
-        
-        elif exp['aqm']=='DualPI2':
-            cmds = '''
-            sudo tc qdisc del dev {iface} root
-            sudo tc qdisc replace dev {iface} root handle 1: htb default 3
-            sudo tc class add dev {iface} parent 1: classid 1:3 htb rate {capacity}mbit
-            sudo tc qdisc add dev {iface} parent 1:3 handle 3: dualpi2 target {threshold}ms
-            '''.format(iface=router_egress_name, capacity=exp['btl_capacity'], threshold=exp['ecn_threshold'])
-            router_node.execute(cmds)
-            
-
         rx0_node.execute("killall iperf3")
         rx1_node.execute("killall iperf3")
         
@@ -217,8 +172,8 @@ for exp in exp_lists:
         tx0_node.execute_thread(ss_tx0_script.format(flow=name_tx0, duration=d))
         tx1_node.execute_thread(ss_tx1_script.format(flow=name_tx1, duration=d))
         
-        tx0_node.execute_thread("sleep 1; iperf3 -c 10.0.3.100 -t {duration} -P {flows} -C {cc} -p 4000 -J > {flow}-result.json".format(flow =name_tx0, duration=d, flows=1, cc=exp['cc_tx0']))
-        stdout, stderr = tx1_node.execute("sleep 1; iperf3 -c 10.0.4.100 -t {duration} -P {flows} -C {cc} -p 5000 -J > {flow}-result.json".format(flow =name_tx1, duration=d, flows=1, cc=exp['cc_tx1']))
+        tx0_node.execute_thread("sleep 1; iperf3 -c 10.0.5.100 -t {duration} -P {flows} -C {cc} -p 4000 -J > {flow}-result.json".format(flow =name_tx0, duration=d, flows=1, cc=exp['cc_tx0']))
+        stdout, stderr = tx1_node.execute("sleep 1; iperf3 -c 10.0.5.101 -t {duration} -P {flows} -C {cc} -p 5000 -J > {flow}-result.json".format(flow =name_tx1, duration=d, flows=1, cc=exp['cc_tx1']))
         time.sleep(3)  # time.sleep(1)
         
 print("finished")
@@ -226,4 +181,5 @@ print("finished")
         
 ```
 :::
+
 
