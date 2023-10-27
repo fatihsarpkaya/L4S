@@ -38,8 +38,8 @@ exp_factors = {
     'n_bdp': [0.5, 2, 5, 10],  # n x bandwidth delay product
     'btl_capacity': [100, 1000],
     'base_rtt': [10, 50, 100],
-    'aqm': ['FIFO', 'single_queue_FQ', 'Codel', 'FQ', 'FQ_Codel', 'DualPI2'],
-    #'aqm': ['single_queue_FQ', 'Codel', 'FQ', 'FQ_Codel', 'DualPI2'],
+    #'aqm': ['FIFO', 'single_queue_FQ', 'Codel', 'FQ', 'FQ_Codel', 'DualPI2'],
+    'aqm': ['single_queue_FQ', 'Codel', 'FQ', 'FQ_Codel', 'DualPI2'],
     'ecn_threshold': [5, 20],
     'ecn_fallback': [0, 1],  # 0: OFF, 1: ON
     'rx0_ecn': [0, 1, 2],  # 0: noecn, 1: ecn, 2: accecn
@@ -144,8 +144,8 @@ for exp in exp_lists:
 specified_params = {
     'btl_capacity': 100,
     'n_bdp': 2,
-    #'base_rtt': 10,
-    'ecn_threshold': 5,
+    'base_rtt': 10,
+    #'ecn_threshold': 5,
     'ecn_fallback': 0,
     'rx0_ecn': 2,
     'rx1_ecn': 2,
@@ -157,7 +157,9 @@ exp_factors['btl_capacity']  # these are 100 and 1000
 exp_factors['base_rtt']  # these are 10, 50, 100
 
 factor_x = 'aqm'  # choose which parameter you want to observe
-factor_y = 'base_rtt'  # choose which parameter you want to observe
+factor_y = 'ecn_threshold'
+#factor_y = 'base_rtt'
+#factor_y = 'n_bdp'  # choose which parameter you want to observe
 
 # Create nested dictionaries to store data by btl_capacity and base_rtt
 relevant_data_tx0 = {}
@@ -285,8 +287,8 @@ def plot_heatmap_for_fixed_btl(sorted_data_tx0, sorted_data_tx1):
     return heatmap_data
 
 
-desired_order = ['FIFO', 'single_queue_FQ', 'Codel', 'FQ', 'FQ_Codel', 'DualPI2']
-#desired_order = ['single_queue_FQ', 'Codel', 'FQ', 'FQ_Codel', 'DualPI2']
+#desired_order = ['FIFO', 'single_queue_FQ', 'Codel', 'FQ', 'FQ_Codel', 'DualPI2']
+desired_order = ['single_queue_FQ', 'Codel', 'FQ', 'FQ_Codel', 'DualPI2']
 
 # Convert the dictionary to a Pandas DataFrame
 df = pd.DataFrame(plot_heatmap_for_fixed_btl(sorted_throughputs_tx0, sorted_throughputs_tx1)).fillna(0)
@@ -294,7 +296,7 @@ df = df.reindex(desired_order)
 
 # Generate the heatmap
 plt.figure(figsize=(12, 8))
-sns.heatmap(df, annot=True, cmap="coolwarm", cbar_kws={'label': 'Prague Throughput Share'})
+sns.heatmap(df, annot=True, cmap="coolwarm", cbar_kws={'label': 'Prague Throughput Share'}, vmin=0, vmax=1)
 
 
 
