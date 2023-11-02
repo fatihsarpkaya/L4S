@@ -37,13 +37,13 @@ directory="/Users/fatihberkay/Desktop/Single_bottleneck"  #data_dir_tx0 and data
 exp_factors = {
     'n_bdp': [0.5, 2, 5, 10],  # n x bandwidth delay product
     'btl_capacity': [100, 1000],
-    'base_rtt': [10, 50, 100],
-    #'aqm': ['FIFO', 'single_queue_FQ', 'Codel', 'FQ', 'FQ_Codel', 'DualPI2'],
-    'aqm': ['single_queue_FQ', 'Codel', 'FQ', 'FQ_Codel', 'DualPI2'],
+    'base_rtt': [5, 10, 50, 100],
+    'aqm': ['FIFO', 'single_queue_FQ', 'Codel', 'FQ', 'FQ_Codel', 'DualPI2'],
+    #'aqm': ['single_queue_FQ', 'Codel', 'FQ', 'FQ_Codel', 'DualPI2'],
     'ecn_threshold': [5, 20],
     'ecn_fallback': [0, 1],  # 0: OFF, 1: ON
     'rx0_ecn': [0, 1, 2],  # 0: noecn, 1: ecn, 2: accecn
-    'rx1_ecn': [0, 1, 2],  # 0: noecn, 1: ecn, 2: accecn
+    'rx1_ecn': [0, 1],  # 0: noecn, 1: ecn
     'cc_tx0': ["prague"],
     'cc_tx1': ["cubic"],
     'trial': [1]
@@ -144,11 +144,11 @@ for exp in exp_lists:
 specified_params = {
     'btl_capacity': 100,
     'n_bdp': 2,
-    'base_rtt': 10,
-    #'ecn_threshold': 5,
+    #'base_rtt': 10,
+    'ecn_threshold': 5,
     'ecn_fallback': 0,
     'rx0_ecn': 2,
-    'rx1_ecn': 2,
+    'rx1_ecn': 1,
     # 'aqm': 'FIFO'
 
 }
@@ -157,8 +157,8 @@ exp_factors['btl_capacity']  # these are 100 and 1000
 exp_factors['base_rtt']  # these are 10, 50, 100
 
 factor_x = 'aqm'  # choose which parameter you want to observe
-factor_y = 'ecn_threshold'
-#factor_y = 'base_rtt'
+factor_y = 'base_rtt'
+#factor_y = 'ecn_threshold'
 #factor_y = 'n_bdp'  # choose which parameter you want to observe
 
 # Create nested dictionaries to store data by btl_capacity and base_rtt
@@ -287,8 +287,8 @@ def plot_heatmap_for_fixed_btl(sorted_data_tx0, sorted_data_tx1):
     return heatmap_data
 
 
-#desired_order = ['FIFO', 'single_queue_FQ', 'Codel', 'FQ', 'FQ_Codel', 'DualPI2']
-desired_order = ['single_queue_FQ', 'Codel', 'FQ', 'FQ_Codel', 'DualPI2']
+desired_order = ['FIFO', 'single_queue_FQ', 'Codel', 'FQ', 'FQ_Codel', 'DualPI2']
+#desired_order = ['single_queue_FQ', 'Codel', 'FQ', 'FQ_Codel', 'DualPI2']
 
 # Convert the dictionary to a Pandas DataFrame
 df = pd.DataFrame(plot_heatmap_for_fixed_btl(sorted_throughputs_tx0, sorted_throughputs_tx1)).fillna(0)
@@ -305,9 +305,9 @@ title_map = {
     'n_bdp': lambda: f"{specified_params['n_bdp']}BDP-",
     'base_rtt': lambda: f"{specified_params['base_rtt']}ms RTT-",
     'ecn_threshold': lambda: f"ECN_thresh = {specified_params['ecn_threshold']}ms -",
-    'rx0_ecn': lambda: f"rx0_ecn:{specified_params['rx0_ecn']}-",
-    'rx1_ecn': lambda: f"rx1_ecn:{specified_params['rx1_ecn']}-",
-    'ecn_fallback': lambda: f"ecnfallback:{specified_params['ecn_fallback']}"
+    'rx0_ecn': lambda: f"rx0_ecn={specified_params['rx0_ecn']}-",
+    'rx1_ecn': lambda: f"rx1_ecn={specified_params['rx1_ecn']}-",
+    'ecn_fallback': lambda: f"ecnfallback={specified_params['ecn_fallback']}"
 }
 
 dynamic_title = ''.join(val() for key, val in title_map.items() if key != factor_y)

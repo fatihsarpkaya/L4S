@@ -40,12 +40,12 @@ import itertools
 exp_factors = { 
     'n_bdp': [0.5, 2, 5, 10], # n x bandwidth delay product
     'btl_capacity': [100, 1000],
-    'base_rtt': [10, 50, 100],
+    'base_rtt': [5, 10, 50, 100],
     'aqm': ['FIFO', 'single_queue_FQ', 'Codel', 'FQ', 'FQ_Codel', 'DualPI2'],
-    'ecn_threshold': [5, 20],
+    'ecn_threshold': [1, 5, 20],
     'ecn_fallback': [0, 1], # 0: OFF, 1: ON
     'rx0_ecn': [0, 1, 2], # 0: noecn, 1: ecn, 2: accecn
-    'rx1_ecn': [0, 1, 2], # 0: noecn, 1: ecn, 2: accecn
+    'rx1_ecn': [0, 1],   # 0: noecn, 1: ecn
     'cc_tx0' : ["prague"],
     'cc_tx1' : ["cubic"],
     'trial': [1]
