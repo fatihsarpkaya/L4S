@@ -37,18 +37,19 @@ rx1_ingress_iface  = rx1_node.get_interface(network_name = "net-rx")
 # generate full factorial experiment
 import itertools
 
-exp_factors = { 
-    'n_bdp': [0.5, 2, 5, 10], # n x bandwidth delay product
+exp_factors = {
+    'n_bdp': [0.5, 2, 5, 10],  # n x bandwidth delay product
     'btl_capacity': [100, 1000],
     'base_rtt': [5, 10, 50, 100],
     'aqm': ['FIFO', 'single_queue_FQ', 'Codel', 'FQ', 'FQ_Codel', 'DualPI2'],
+    #'aqm': ['single_queue_FQ', 'Codel', 'FQ', 'FQ_Codel', 'DualPI2'],
     'ecn_threshold': [1, 5, 20],
-    'ecn_fallback': [0, 1], # 0: OFF, 1: ON
-    'rx0_ecn': [0, 1, 2], # 0: noecn, 1: ecn, 2: accecn
-    'rx1_ecn': [0, 1],   # 0: noecn, 1: ecn
-    'cc_tx0' : ["prague"],
-    'cc_tx1' : ["cubic"],
-    'trial': [1]
+    'ecn_fallback': [0, 1],  #fallback algorithm, it falls back when it detects single queue classic ECN bottleneck # 0: OFF, 1: ON
+    'rx0_ecn': [0, 1, 2],  # 0: noecn, 1: ecn, 2: accecn
+    'rx1_ecn': [0, 1],  # 0: noecn, 1: ecn
+    'cc_tx0': ["prague"],
+    'cc_tx1': ["cubic"],
+    'trial': [1, 2, 3, 4, 5]
 }
 
 factor_names = [k for k in exp_factors]
@@ -60,15 +61,15 @@ seen_combinations = set()
 
 for factor_l in factor_lists:
     temp_dict = dict(zip(factor_names, factor_l))
-    if temp_dict['aqm'] == 'FIFO':
-        del temp_dict['ecn_threshold']
+    if temp_dict['n_bdp'] * temp_dict['base_rtt'] >= temp_dict['ecn_threshold']:
+        if temp_dict['aqm'] == 'FIFO':
+            del temp_dict['ecn_threshold']
+        # Convert dict to a frozenset for set operations
+        fs = frozenset(temp_dict.items())
     
-    # Convert dict to a frozenset for set operations
-    fs = frozenset(temp_dict.items())
-    
-    if fs not in seen_combinations:
-        seen_combinations.add(fs)
-        exp_lists.append(temp_dict)
+        if fs not in seen_combinations:
+            seen_combinations.add(fs)
+            exp_lists.append(temp_dict)
 
 data_dir_tx0 = slice_name + 'singlebottleneck'+"-tx0"
 data_dir_tx1 = slice_name + 'singlebottleneck'+"-tx1"

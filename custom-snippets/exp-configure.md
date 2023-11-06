@@ -5,16 +5,25 @@
 
 ::: {.cell .code}
 ```python
-#installing the kernel
-pkg_list = ['iproute2_5.10.0-1_amd64.deb',
-            'iproute2-doc_5.10.0-1_all.deb',
-            'linux-headers-5.15.72-43822a283-prague-43_1_amd64.deb',
-            'linux-image-5.15.72-43822a283-prague-43_1_amd64.deb',
-            'linux-libc-dev_1_amd64.deb']
+# #installing the kernel
+# pkg_list = ['iproute2_5.10.0-1_amd64.deb',
+#             'iproute2-doc_5.10.0-1_all.deb',
+#             'linux-headers-5.15.72-43822a283-prague-43_1_amd64.deb',
+#             'linux-image-5.15.72-43822a283-prague-43_1_amd64.deb',
+#             'linux-libc-dev_1_amd64.deb']
+# for node in slice.get_nodes():
+# 	for pkg in pkg_list:
+# 	    node.upload_file("/home/fabric/work/debian_build/" + pkg, "/home/ubuntu/" + pkg)
+# 	node.execute("sudo dpkg -i " + " ".join(pkg_list) + "; sudo reboot")
 for node in slice.get_nodes():
-	for pkg in pkg_list:
-	    node.upload_file("/home/fabric/work/debian_build/" + pkg, "/home/ubuntu/" + pkg)
-	node.execute("sudo dpkg -i " + " ".join(pkg_list) + "; sudo reboot")
+    # Download and unzip the kernel package
+    node.execute("wget https://github.com/L4STeam/linux/releases/download/testing-build/l4s-testing.zip")
+    node.execute("unzip l4s-testing.zip")
+    
+    # Install the kernel packages and update GRUB
+    node.execute("sudo dpkg --install debian_build/*")
+    node.execute("sudo update-grub")
+    node.execute("sudo reboot")
 
 # wait for all nodes to come back up
 slice.wait_ssh(progress=True)
