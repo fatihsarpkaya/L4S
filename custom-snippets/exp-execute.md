@@ -104,8 +104,8 @@ for exp in exp_lists:
 
     # check if we already ran this experiment
     # (allow stop/resume)
-    name_tx0="%s_%0.1f_%d_%d_%s_%s_%d_%d_%d" % (exp['cc_tx0'],exp['n_bdp'], exp['btl_capacity'], exp['base_rtt'], exp['aqm'], str(exp.get('ecn_threshold', 'none')), exp['ecn_fallback'], exp['rx0_ecn'], exp['rx1_ecn'])
-    name_tx1="%s_%0.1f_%d_%d_%s_%s_%d_%d_%d" % (exp['cc_tx1'],exp['n_bdp'], exp['btl_capacity'], exp['base_rtt'], exp['aqm'], str(exp.get('ecn_threshold', 'none')), exp['ecn_fallback'], exp['rx0_ecn'], exp['rx1_ecn'])
+    name_tx0="%s_%0.1f_%d_%d_%s_%s_%d_%d_%d_%d" % (exp['cc_tx0'],exp['n_bdp'], exp['btl_capacity'], exp['base_rtt'], exp['aqm'], str(exp.get('ecn_threshold', 'none')), exp['ecn_fallback'], exp['rx0_ecn'], exp['rx1_ecn'], exp['trial'])
+    name_tx1="%s_%0.1f_%d_%d_%s_%s_%d_%d_%d_%d" % (exp['cc_tx1'],exp['n_bdp'], exp['btl_capacity'], exp['base_rtt'], exp['aqm'], str(exp.get('ecn_threshold', 'none')), exp['ecn_fallback'], exp['rx0_ecn'], exp['rx1_ecn'], exp['trial'])
     
     file_out_tx0_json = name_tx0+"-result.json"
     file_out_tx0_ss = name_tx0+"-ss.txt"
@@ -129,7 +129,7 @@ for exp in exp_lists:
             delay_node.execute(cmds)
         
         # fixed values
-        btl_limit    = int(1000*exp['n_bdp']*exp['btl_capacity']*2*exp['base_rtt']/8) # limit of the bottleneck, n_bdp x BDP in bytes 
+        btl_limit    = int(1000*exp['n_bdp']*exp['btl_capacity']*exp['base_rtt']/8) # limit of the bottleneck, n_bdp x BDP in bytes 
         packet_number=int(btl_limit/1500)+1
         
         
@@ -143,27 +143,28 @@ for exp in exp_lists:
         rx1_node.execute(server_ecn_list[exp['rx1_ecn']])
         
         #aqm type selection
-        cmd_prefix = '''
+        cmds_prefix = '''
             sudo tc qdisc del dev {iface} root
             sudo tc qdisc replace dev {iface} root handle 1: htb default 3 
             sudo tc class add dev {iface} parent 1: classid 1:3 htb rate {capacity}mbit 
             '''.format(iface=router_egress_name, capacity=exp['btl_capacity'], buffer=btl_limit)
         cmds_specific = {
-		'FIFO': "sudo tc qdisc add dev {iface} parent 1:3 handle 3: bfifo limit {buffer}".format(iface=router_egress_name, capacity=exp['btl_capacity'], buffer=btl_limit),
-		'single_queue_FQ': "sudo tc qdisc replace dev {iface} parent 1:3 handle 3: fq limit {packet_limit} flow_limit {packet_limit} orphan_mask 0 ce_threshold {threshold}ms".format(iface=router_egress_name, capacity=exp['btl_capacity'], packet_limit=packet_number, threshold=exp['ecn_threshold']),
-		'Codel': "sudo tc qdisc replace dev {iface} parent 1:3 handle 3: codel limit {packet_limit} target {target}ms interval 100ms ecn ce_threshold {threshold}ms".format(iface=router_egress_name, capacity=exp['btl_capacity'], packet_limit=packet_number, target=exp['base_rtt']*exp['n_bdp'], threshold=exp['ecn_threshold']),
-		'FQ': "sudo tc qdisc replace dev {iface} parent 1:3 handle 3: fq limit {packet_limit} flow_limit {packet_limit} ce_threshold {threshold}ms".format(iface=router_egress_name, capacity=exp['btl_capacity'], packet_limit=packet_number, threshold=exp['ecn_threshold']),
-		'FQ_Codel': "sudo tc qdisc replace dev {iface} parent 1:3 handle 3: fq_codel limit {packet_limit} target {target}ms interval 100ms ecn ce_threshold {threshold}ms".format(iface=router_egress_name, capacity=exp['btl_capacity'], packet_limit=packet_number, target=exp['base_rtt']*exp['n_bdp'], threshold=exp['ecn_threshold']),
-		'DualPI2': "sudo tc qdisc add dev {iface} parent 1:3 handle 3: dualpi2 target {threshold}ms".format(iface=router_egress_name, capacity=exp['btl_capacity'], threshold=exp['ecn_threshold'])
+        'FIFO': "sudo tc qdisc add dev {iface} parent 1:3 handle 3: bfifo limit {buffer}".format(iface=router_egress_name, buffer=btl_limit),
+        'single_queue_FQ': "sudo tc qdisc replace dev {iface} parent 1:3 handle 3: fq limit {packet_limit} flow_limit {packet_limit} orphan_mask 0 ce_threshold {threshold}ms".format(iface=router_egress_name, packet_limit=packet_number, threshold=exp.get('ecn_threshold', 0)),
+        'Codel': "sudo tc qdisc replace dev {iface} parent 1:3 handle 3: codel limit {packet_limit} target {target}ms interval 100ms ecn ce_threshold {threshold}ms".format(iface=router_egress_name, packet_limit=packet_number, target=exp['base_rtt']*exp['n_bdp'], threshold=exp.get('ecn_threshold', 0)),
+        'FQ': "sudo tc qdisc replace dev {iface} parent 1:3 handle 3: fq limit {packet_limit} flow_limit {packet_limit} ce_threshold {threshold}ms".format(iface=router_egress_name, packet_limit=packet_number, threshold=exp.get('ecn_threshold', 0)),
+        'FQ_Codel': "sudo tc qdisc replace dev {iface} parent 1:3 handle 3: fq_codel limit {packet_limit} target {target}ms interval 100ms ecn ce_threshold {threshold}ms".format(iface=router_egress_name, packet_limit=packet_number, target=exp['base_rtt']*exp['n_bdp'], threshold=exp.get('ecn_threshold', 0)),
+        'DualPI2': "sudo tc qdisc add dev {iface} parent 1:3 handle 3: dualpi2 target {threshold}ms".format(iface=router_egress_name, threshold=exp.get('ecn_threshold', 0))
         }
+
         router_node.execute(cmds_prefix)
         router_node.execute(cmds_specific[ exp['aqm'] ])
             
         rx0_node.execute("killall iperf3")
         rx1_node.execute("killall iperf3")
         
-        ss_tx0_script="rm -f {flow}-ss.txt; start_time=$(date +%s); while true; do ss --no-header -eipn dst 10.0.3.100 | ts '%.s' | tee -a {flow}-ss.txt; current_time=$(date +%s); elapsed_time=$((current_time - start_time));  if [ $elapsed_time -ge {duration} ]; then break; fi; sleep 0.1; done;"
-        ss_tx1_script="rm -f {flow}-ss.txt; start_time=$(date +%s); while true; do ss --no-header -eipn dst 10.0.4.100 | ts '%.s' | tee -a {flow}-ss.txt; current_time=$(date +%s); elapsed_time=$((current_time - start_time));  if [ $elapsed_time -ge {duration} ]; then break; fi; sleep 0.1; done;"
+        ss_tx0_script="rm -f {flow}-ss.txt; start_time=$(date +%s); while true; do ss --no-header -eipn dst 10.0.5.100 | ts '%.s' | tee -a {flow}-ss.txt; current_time=$(date +%s); elapsed_time=$((current_time - start_time));  if [ $elapsed_time -ge {duration} ]; then break; fi; sleep 0.1; done;"
+        ss_tx1_script="rm -f {flow}-ss.txt; start_time=$(date +%s); while true; do ss --no-header -eipn dst 10.0.5.101 | ts '%.s' | tee -a {flow}-ss.txt; current_time=$(date +%s); elapsed_time=$((current_time - start_time));  if [ $elapsed_time -ge {duration} ]; then break; fi; sleep 0.1; done;"
 
         #print("Starting experiment with {1} bdp {2} capacity {3} rtt {4} {5} thrshold {6} ecn_fallback {7} rx0 {8} rx1 for {duration} seconds".format(duration=d, 1=exp['n_bdp'], 2=exp['btl_capacity'], 3=exp['base_rtt'], 4=exp['aqm'], 5=exp['ecn_threshold'], 6= exp['ecn_fallback'], 7=exp['rx0_ecn'], 8=exp['rx1_ecn']))
         
