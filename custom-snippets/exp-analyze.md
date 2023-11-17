@@ -21,14 +21,6 @@ for exp in exp_lists:
 
     elif len(stderr_tx0_csv) or len(stderr_tx1_csv):
         print("Running to generate csv files " + name_tx0 + " and "+ name_tx1)
-        
-        
-    #tx0_node.download_file("/home/fabric/work/{flow}-result.json".format(flow=name_prague),"/home/ubuntu/{f_type}-result.json".format(f_type=name_prague))
-    #tx1_node.download_file("/home/fabric/work/{flow}-result.json".format(flow=name_cubic),"/home/ubuntu/{f_type}-result.json".format(f_type=name_cubic))
-    #tx0_node.download_file("/home/fabric/work/{flow}-ss.txt".format(flow=name_prague),"/home/ubuntu/{f_type}-ss.txt".format(f_type=name_prague))
-    #tx1_node.download_file("/home/fabric/work/{flow}-ss.txt".format(flow=name_cubic),"/home/ubuntu/{f_type}-ss.txt".format(f_type=name_cubic))
-
-
     
         ss_tx0_script_processing="""
 
@@ -41,9 +33,7 @@ for exp in exp_lists:
         cat ${{f_1}}-ss-processed.txt | grep -oP '\\bfd=.*?(\s|$)' | awk -F '[=,]' '{{print $2}}' | tr -d ')' | tr -d ' '   > fd-${{f_1}}.txt;
         paste ts-${{f_1}}.txt fd-${{f_1}}.txt cwnd-${{f_1}}.txt srtt-${{f_1}}.txt -d ',' > ${{f_1}}-ss.csv;""".format(types=name_tx0)
      
-    
         tx0_node.execute(ss_tx0_script_processing)
-
 
         ss_tx1_script_processing="""
 
@@ -59,12 +49,7 @@ for exp in exp_lists:
 
         tx1_node.execute(ss_tx1_script_processing)
 
-    #tx0_node.download_file("/home/fabric/work/{f_type}-ss.csv".format(f_type=name_prague),"/home/ubuntu/{f_type}-ss.csv".format(f_type=name_prague))
-    #tx1_node.download_file("/home/fabric/work/{f_type}-ss.csv".format(f_type=name_cubic),"/home/ubuntu/{f_type}-ss.csv".format(f_type=name_cubic))
 
-
-
-#tx0_node.execute('rm -r '+data_dir_tx0)
 tx0_node.execute('mkdir '+data_dir_tx0)
 
 tx0_node.execute('mv *.json '+ data_dir_tx0)
@@ -72,10 +57,8 @@ tx0_node.execute('mv *.txt '+ data_dir_tx0)
 tx0_node.execute('mv *.csv '+ data_dir_tx0)
 
 tx0_node.execute('tar -czvf '+data_dir_tx0+ '.tgz ' +  data_dir_tx0)
-#tx0_node.download_file(data_dir_tx0+'.tgz ', '/home/ubuntu/' + data_dir_tx0+ '.tgz')
 
 
-#tx1_node.execute('rm -r '+data_dir_tx1)
 tx1_node.execute('mkdir '+data_dir_tx1)
 
 tx1_node.execute('mv *.json '+ data_dir_tx1)
@@ -83,18 +66,12 @@ tx1_node.execute('mv *.txt '+ data_dir_tx1)
 tx1_node.execute('mv *.csv '+ data_dir_tx1)
         
 tx1_node.execute('tar -czvf '+data_dir_tx1+ '.tgz ' +  data_dir_tx1)
-#tx1_node.download_file(data_dir_tx1+'.tgz ', '/home/ubuntu/' + data_dir_tx1+ '.tgz')
 ```
 :::
 
 ::: {.cell .code}
 ```python
-import shutil, tarfile
-
-# remove previously stored data files
-#shutil.rmtree(data_dir_tx0)
-#shutil.rmtree(data_dir_tx1)
-
+import tarfile
 # extract tar files 
 with tarfile.open(data_dir_tx0+'.tgz ', 'r:gz') as tar:
     tar.extractall()
@@ -104,235 +81,73 @@ with tarfile.open(data_dir_tx1+'.tgz ', 'r:gz') as tar:
 ```
 :::
 
-::: {.cell .markdown}
-### You can download the .tgz file from the node to the local machine and use plot_on_local_barplot.py file to see the results.
+::: {.cell .code}
+```python
+tx0_node.upload_file("/home/fabric/work/analysis_tx0.py","/home/ubuntu/analysis_tx0.py")
+tx1_node.upload_file("/home/fabric/work/analysis_tx1.py","/home/ubuntu/analysis_tx1.py")
+
+cmds_py_install = '''
+            sudo apt-get -y install python3
+            sudo apt -y install python3-pip
+            pip install numpy
+            pip install matplotlib
+            pip install pandas
+            '''
+
+tx0_node.execute(cmds_py_install)
+tx1_node.execute(cmds_py_install)
+```
 :::
-
-
 
 ::: {.cell .code}
 ```python
-import json
-
-import numpy as np
-
-import matplotlib.pyplot as plt
-
-import pandas as pd
-
-import re
-
-from statistics import mean
-
-
-#get all throughput and SRTT data
-
-throughput_data = {}  # Initialize the dictionary
-
-srtt_data = {}
-
-for exp in exp_lists:
-
-    name_tx0="%s_%0.1f_%d_%d_%s_%s_%d_%d_%d" % (exp['cc_tx0'],exp['n_bdp'], exp['btl_capacity'], exp['base_rtt'], exp['aqm'], str(exp.get('ecn_threshold', 'none')), exp['ecn_fallback'], exp['rx0_ecn'], exp['rx1_ecn'])
-    name_tx1="%s_%0.1f_%d_%d_%s_%s_%d_%d_%d" % (exp['cc_tx1'],exp['n_bdp'], exp['btl_capacity'], exp['base_rtt'], exp['aqm'], str(exp.get('ecn_threshold', 'none')), exp['ecn_fallback'], exp['rx0_ecn'], exp['rx1_ecn'])
-    
-
-    # Load the JSON output file into a Python object
-    
-    ##### Average Throughput for Each Flow ****
-    
-    with open("/home/fabric/work/"+data_dir_tx0+"/{flow1}-result.json".format(flow1=name_tx0), "r") as f:
-        iperf3_data = json.load(f)
-
-    throughput_data[name_tx0]  = iperf3_data['end']['sum_received']['bits_per_second']/(1000000*flow_number_tx0) # to convert Mbit
-
-
-    with open("/home/fabric/work/"+data_dir_tx1+"/{flow1}-result.json".format(flow1=name_tx1), "r") as f:
-        iperf3_data = json.load(f)
-
-
-    throughput_data[name_tx1]  = iperf3_data['end']['sum_received']['bits_per_second']/(1000000*flow_number_tx1) # to convert Mbit
-    
-    
-    
-    ##### Average SRTT for Each Flow ******
-    
-    columns = ['timestamp', 'flow ID', 'cwnd', 'srtt']
-    df_f1= pd.read_csv('/home/fabric/work/'+data_dir_tx0+'/{flow1}-ss.csv'.format(flow1=name_tx0), names=columns)
-    df_f2= pd.read_csv('/home/fabric/work/'+data_dir_tx1+'/{flow1}-ss.csv'.format(flow1=name_tx1), names=columns)
-    
-    # Filter out rows with flow ID = 4, they are for the control flows
-    df_f1= df_f1[df_f1['flow ID'] != 4]
-    df_f2= df_f2[df_f2['flow ID'] != 4]
-    
-    average_RTT_f1 = df_f1['srtt'].mean()
-    average_RTT_f2 = df_f2['srtt'].mean()
-    
-    srtt_data[name_tx0] = average_RTT_f1
-    srtt_data[name_tx1] = average_RTT_f2
-
-import matplotlib.pyplot as plt
-import numpy as np
-
-# Placeholder: A dictionary to store throughput data for each experiment
-# Example format: "n_bdp_btl_capacity_base_rtt_aqm_ecn_threshold_ecn_fallback_rx_ecn_cc_tx_trial"
-# throughput_data = {
-#     "prague_0.5_100_10_FIFO_none_0_0_0": 55.787676690306085,
-#     "prague_2.0_100_10_FIFO_none_0_0_0": 54.248112443427175,
-#     "prague_5.0_100_10_FIFO_none_0_0_0": 38.2013028326071,
-#     "prague_10.0_100_10_FIFO_none_0_0_0": 63.37023092922114,
-#     "cubic_0.5_100_10_FIFO_none_0_0_0": 47.47733567404541,
-#     "cubic_2.0_100_10_FIFO_none_0_0_0": 37.5916393558464,
-#     "cubic_5.0_100_10_FIFO_none_0_0_0": 65.17600721037583,
-#     "cubic_10.0_100_10_FIFO_none_0_0_0": 50.3362326648659,
-# }
-
-
-# User-specified parameters
-specified_params = {
-    'btl_capacity': 100,
-    'n_bdp': 2,
-    'base_rtt': 10,
-    'ecn_threshold': 5,
-    'ecn_fallback': 0,
-    'rx0_ecn': 0,
-    'rx1_ecn': 0
-    
-}
-
-factor_x = 'aqm' 
-
-relevant_data_tx0 = {}
-relevant_data_tx1 = {}
-
-relevant_srtt_data_tx0 = {}
-relevant_srtt_data_tx1 = {}
-
-for exp in exp_lists:
-    #is_relevant = all(item in exp.items() for item in specified_params.items())
-    
-    is_relevant = all(
-        (k == 'ecn_threshold' and (v == exp.get(k) or exp.get(k) is None)) or 
-        (k != 'ecn_threshold' and v == exp.get(k)) for k, v in specified_params.items()
-    )
-
-    if is_relevant:
-        name_tx0="%s_%0.1f_%d_%d_%s_%s_%d_%d_%d" % (exp['cc_tx0'],exp['n_bdp'], exp['btl_capacity'], exp['base_rtt'], exp['aqm'], str(exp.get('ecn_threshold', 'none')), exp['ecn_fallback'], exp['rx0_ecn'], exp['rx1_ecn'])
-        name_tx1="%s_%0.1f_%d_%d_%s_%s_%d_%d_%d" % (exp['cc_tx1'],exp['n_bdp'], exp['btl_capacity'], exp['base_rtt'], exp['aqm'], str(exp.get('ecn_threshold', 'none')), exp['ecn_fallback'], exp['rx0_ecn'], exp['rx1_ecn'])
-
-        print(exp[factor_x])
-        if name_tx0 in throughput_data:
-            xval = exp[factor_x]
-            if xval not in relevant_data_tx0:
-                relevant_data_tx0[xval] = []
-            relevant_data_tx0[xval].append(throughput_data[name_tx0])
-            
-        if name_tx1 in throughput_data:
-            xval = exp[factor_x]
-            if xval not in relevant_data_tx1:
-                relevant_data_tx1[xval] = []
-            relevant_data_tx1[xval].append(throughput_data[name_tx1])
-            
-        if name_tx0 in srtt_data:
-            xval = exp[factor_x]
-            if xval not in relevant_srtt_data_tx0:
-                relevant_srtt_data_tx0[xval] = []
-            relevant_srtt_data_tx0[xval].append(srtt_data[name_tx0])
-            
-        if name_tx1 in srtt_data:
-            xval = exp[factor_x]
-            if xval not in relevant_srtt_data_tx1:
-                relevant_srtt_data_tx1[xval] = []
-            relevant_srtt_data_tx1[xval].append(srtt_data[name_tx1])
-            
-        
-
-# Average the throughputs over all trials for factor_x
-for xval, throughputs in relevant_data_tx0.items():
-    relevant_data_tx0[xval] = np.mean(throughputs)
-    
-for xval, throughputs in relevant_data_tx1.items():
-    relevant_data_tx1[xval] = np.mean(throughputs)
-    
-for xval, srtts in relevant_srtt_data_tx0.items():
-    relevant_srtt_data_tx0[xval] = np.mean(srtts)
-    
-for xval, srtts in relevant_srtt_data_tx1.items():
-    relevant_srtt_data_tx1[xval] = np.mean(srtts)
-
-
-# Sort values
-xvals = sorted(list(set(list(relevant_data_tx0.keys()) + list(relevant_data_tx1.keys()))))
-
-print(xvals)
-
-# Get throughputs for sorted values
-throughputs_tx0 = [relevant_data_tx0.get(xval, 0) for xval in xvals]
-throughputs_tx1 = [relevant_data_tx1.get(xval, 0) for xval in xvals]
-
-rtts_tx0 = [relevant_srtt_data_tx0.get(xval, 0) for xval in xvals]
-rtts_tx1 = [relevant_srtt_data_tx1.get(xval, 0) for xval in xvals]
-
-print(rtts_tx0)
-print(rtts_tx1)
-bar_width = 0.35
-index = np.arange(len(xvals))
-
-plt.figure(figsize=(10,6))
-bar1 = plt.bar(index, throughputs_tx0, bar_width, label='TX0', alpha=0.8, color='b')
-bar2 = plt.bar(index + bar_width, throughputs_tx1, bar_width, label='TX1', alpha=0.8, color='r')
-
-# Annotate bars for TX0
-for bar in bar1:
-    height = bar.get_height()
-    plt.text(bar.get_x() + bar.get_width()/2, height + 0.5, f"{height:.2f}", ha='center', va='bottom')
-
-# Annotate bars for TX1
-for bar in bar2:
-    height = bar.get_height()
-    plt.text(bar.get_x() + bar.get_width()/2, height + 0.5, f"{height:.2f}", ha='center', va='bottom')
-
-# Label the bars and the x-axis
-plt.xlabel(factor_x)
-plt.ylabel('Average Throughput')
-plt.title('Average Throughput vs queue type for different flows')
-plt.xticks(index + bar_width/2, xvals)  # Positioning on the x axis
-plt.legend()
-plt.tight_layout()
-
-plt.show()
-
-
-
-bar_width = 0.35
-index = np.arange(len(xvals))
-
-plt.figure(figsize=(10,6))
-bar1 = plt.bar(index, rtts_tx0, bar_width, label='TX0', alpha=0.8, color='b')
-bar2 = plt.bar(index + bar_width, rtts_tx1, bar_width, label='TX1', alpha=0.8, color='r')
-
-# Annotate bars for TX0
-for bar in bar1:
-    height = bar.get_height()
-    plt.text(bar.get_x() + bar.get_width()/2, height + 0.5, f"{height:.2f}", ha='center', va='bottom')
-
-# Annotate bars for TX1
-for bar in bar2:
-    height = bar.get_height()
-    plt.text(bar.get_x() + bar.get_width()/2, height + 0.5, f"{height:.2f}", ha='center', va='bottom')
-
-# Label the bars and the x-axis
-plt.xlabel(factor_x)
-plt.ylabel('Average SRTT')
-plt.title('Average SRTT vs queue type for different flows')
-plt.xticks(index + bar_width/2, xvals)  # Positioning on the x axis
-plt.legend()
-plt.tight_layout()
-
-plt.show()
-
+tx0_node.execute('python3 analysis_tx0.py')
+tx1_node.execute('python3 analysis_tx1.py')
 ```
 :::
+
+::: {.cell .code}
+```python
+tx0_node.download_file("/home/fabric/work/tput_tx0.json","/home/ubuntu/throughput_data.json")
+tx0_node.download_file("/home/fabric/work/srtt_tx0.json","/home/ubuntu/srtt_data.json")
+
+tx1_node.download_file("/home/fabric/work/tput_tx1.json","/home/ubuntu/throughput_data.json")
+tx1_node.download_file("/home/fabric/work/srtt_tx1.json","/home/ubuntu/srtt_data.json")
+```
+:::
+
+::: {.cell .code}
+```python
+
+import json
+import os
+
+# Initialize empty variables
+throughput_data = {}
+srtt_data = {}
+
+# Directory containing JSON files
+data_directory = '/home/fabric/work/'
+
+# List of JSON files in the directory
+json_files = [f for f in os.listdir(data_directory) if f.endswith('.json')]
+
+# Load data from each JSON file and update the variables
+for file_name in json_files:
+    file_path = os.path.join(data_directory, file_name)
+    with open(file_path, 'r') as f:
+        data = json.load(f)
+
+    # Check if the file contains throughput data or srtt data based on its name
+    if 'tput' in file_name:
+        throughput_data.update(data)
+    elif 'srtt' in file_name:
+        srtt_data.update(data)
+```
+:::
+
+
+
 
 
 
