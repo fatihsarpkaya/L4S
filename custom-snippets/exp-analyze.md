@@ -144,14 +144,14 @@ for exp in exp_lists:
     with open("/home/fabric/work/"+data_dir_tx0+"/{flow1}-result.json".format(flow1=name_tx0), "r") as f:
         iperf3_data = json.load(f)
 
-    throughput_data[name_tx0]  = iperf3_data['end']['sum_received']['bits_per_second']/(1000000*1) # to convert Mbit
+    throughput_data[name_tx0]  = iperf3_data['end']['sum_received']['bits_per_second']/(1000000*flow_number_tx0) # to convert Mbit
 
 
     with open("/home/fabric/work/"+data_dir_tx1+"/{flow1}-result.json".format(flow1=name_tx1), "r") as f:
         iperf3_data = json.load(f)
 
 
-    throughput_data[name_tx1]  = iperf3_data['end']['sum_received']['bits_per_second']/(1000000*1) # to convert Mbit
+    throughput_data[name_tx1]  = iperf3_data['end']['sum_received']['bits_per_second']/(1000000*flow_number_tx1) # to convert Mbit
     
     
     
