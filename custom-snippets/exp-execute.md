@@ -52,6 +52,8 @@ exp_factors = {
     'trial': [1, 2, 3, 4, 5]
 }
 
+flow_number_prague=10
+flow_number_cubic=10
 factor_names = [k for k in exp_factors]
 factor_lists = list(itertools.product(*exp_factors.values()))
 
@@ -174,8 +176,8 @@ for exp in exp_lists:
         tx0_node.execute_thread(ss_tx0_script.format(flow=name_tx0, duration=d))
         tx1_node.execute_thread(ss_tx1_script.format(flow=name_tx1, duration=d))
         
-        tx0_node.execute_thread("sleep 1; iperf3 -c 10.0.5.100 -t {duration} -P {flows} -C {cc} -p 4000 -J > {flow}-result.json".format(flow =name_tx0, duration=d, flows=1, cc=exp['cc_tx0']))
-        stdout, stderr = tx1_node.execute("sleep 1; iperf3 -c 10.0.5.101 -t {duration} -P {flows} -C {cc} -p 5000 -J > {flow}-result.json".format(flow =name_tx1, duration=d, flows=1, cc=exp['cc_tx1']))
+        tx0_node.execute_thread("sleep 1; iperf3 -c 10.0.5.100 -t {duration} -P {flows} -C {cc} -p 4000 -J > {flow}-result.json".format(flow =name_tx0, duration=d, flows=flow_number_prague, cc=exp['cc_tx0']))
+        stdout, stderr = tx1_node.execute("sleep 1; iperf3 -c 10.0.5.101 -t {duration} -P {flows} -C {cc} -p 5000 -J > {flow}-result.json".format(flow =name_tx1, duration=d, flows=flow_number_cubic, cc=exp['cc_tx1']))
         time.sleep(3)  # time.sleep(1)
         
 print("finished")
