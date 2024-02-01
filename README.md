@@ -47,3 +47,8 @@ In this case, we tested the AccECN negotiation requirement of TCP Prague. When t
 
 ## Run my Experiment
 
+To reproduce our experiments on FABRIC, log in to the FABRIC testbed's JupyterHub environment. Open a new terminal from the launcher, and run:
+
+> git clone ...
+
+Then, run the `single_bottleneck.ipynb` notebook.
