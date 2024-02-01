@@ -39,12 +39,11 @@ import itertools
 
 exp_factors = {
     'n_bdp': [0.5, 2, 5, 10],  # n x bandwidth delay product
-    'btl_capacity': [100, 1000],
-    'base_rtt': [5, 10, 50, 100],
+    'btl_capacity': [100, 1000], #in Mbps
+    'base_rtt': [5, 10, 50, 100], # in ms
     'aqm': ['FIFO', 'single_queue_FQ', 'Codel', 'FQ', 'FQ_Codel', 'DualPI2'],
-    #'aqm': ['single_queue_FQ', 'Codel', 'FQ', 'FQ_Codel', 'DualPI2'],
-    'ecn_threshold': [1, 5, 20],
-    'ecn_fallback': [0, 1],  #fallback algorithm, it falls back when it detects single queue classic ECN bottleneck # 0: OFF, 1: ON
+    'ecn_threshold': [1, 5, 20], # in ms
+    'ecn_fallback': [0, 1],  #fallback algorithm, TCP Prague falls back to classic TCP when it detects single queue classic ECN bottleneck # 0: OFF, 1: ON
     'rx0_ecn': [0, 1, 2],  # 0: noecn, 1: ecn, 2: accecn
     'rx1_ecn': [0, 1],  # 0: noecn, 1: ecn
     'cc_tx0': ["prague"],
@@ -52,14 +51,18 @@ exp_factors = {
     'trial': [1, 2, 3, 4, 5]
 }
 
-flow_number_tx0=10
-flow_number_tx1=10
+flow_number_tx0=1
+flow_number_tx1=1
+
 factor_names = [k for k in exp_factors]
 factor_lists = list(itertools.product(*exp_factors.values()))
 
 exp_lists = []
 
 seen_combinations = set()
+
+# Removing ECN factor from FIFO bottleneck because it does not support ECN
+# Removing the cases where ECN Threshold is less than or equal to the buffer size in time, these cases are not meaningful in practice
 
 for factor_l in factor_lists:
     temp_dict = dict(zip(factor_names, factor_l))
