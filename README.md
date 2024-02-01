@@ -11,9 +11,9 @@ To run this experiment on [FABRIC](https://fabric-testbed.net), you should have 
 We organize the results according to the key conclusions drawn from our experiments. In our analysis, we primarily focus on scenarios where the Prague receiver and sender negotiate using AccECN, while the Cubic receiver and sender utilize Classic ECN, with a bottleneck capacity of 100 Mbps. However, other important cases are also considered. The figure below shows **Prague throughput share** and **relative queueing latency of cubic** across different AQM types and buffer BDP sizes.
 
 
-![Results_throughput](heatmap_prague_share.png)
+![Results_throughput](/results/heatmap_prague_share.png)
 
-![Results_rtt](heatmap_relative_queuedelay.png)
+![Results_rtt](/results/heatmap_relative_queuedelay.png)
 
 
 ### No Domination in FIFO Bottlenecks without ECN
@@ -39,7 +39,7 @@ The results previously discussed were obtained without the new ECN Fallback algo
 
 In scenarios with a 5 ms ECN threshold, the algorithm functions effectively, ensuring a fair throughput distribution among flows. However, under a 1 ms ECN threshold, Prague’s dominance remains, especially in single queue FQ and Codel AQMs, as illustrated in the figure below. Although the algorithm is designed to detect single queue classic ECN AQMs, our findings suggest that at very low ECN threshold values, such as 1 ms, it struggles to accurately identify the AQM type. Consequently, in these conditions, Prague does not exhibit the expected fallback behavior.
 
-![Results_ecnfallback](heatmap_prague_share-ecnfallback.png) 
+![Results_ecnfallback](/results/heatmap_prague_share-ecnfallback.png) 
 
 ### AccECN Negotiation Requirement of TCP Prague
 
