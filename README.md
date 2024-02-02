@@ -49,6 +49,33 @@ In this case, we tested the AccECN negotiation requirement of TCP Prague. When t
 
 To reproduce our experiments on FABRIC, log in to the FABRIC testbed's JupyterHub environment. Open a new terminal from the launcher, and run:
 
-> git clone ...
+> git clone https://github.com/fatihsarpkaya/L4S.git
 
-Then, run the `single_bottleneck.ipynb` notebook.
+In order to get the results for Prague throughput share and Cubic relative queueing delay heatmaps as shown above, run the `single_bottleneck.ipynb` notebook. 
+
+In this notebook, the experiment parameters are chosen as following.
+```
+ exp_factors = {
+    'n_bdp': [0.5, 2, 5, 10],  # n x bandwidth delay product
+    'btl_capacity': [100], #in Mbps #'btl_capacity': [100, 1000]
+    'base_rtt': [5, 10, 50], # in ms #'base_rtt': [5, 10, 50, 100],
+    'aqm': ['FIFO', 'single_queue_FQ', 'Codel', 'FQ', 'FQ_Codel', 'DualPI2'],
+    'ecn_threshold': [1, 5], # in ms #'ecn_threshold': [1, 5, 20]
+    'ecn_fallback': [0],  #fallback algorithm, TCP Prague falls back to classic TCP when it detects single queue classic ECN bottleneck # 0: OFF, 1: ON  #'ecn_fallback': [0, 1]
+    'rx0_ecn': [2],  # 0: noecn, 1: ecn, 2: accecn #'rx0_ecn': [0, 1, 2]
+    'rx1_ecn': [1],  # 0: noecn, 1: ecn #'rx1_ecn': [0, 1]
+    'cc_tx0': ["prague"],
+    'cc_tx1': ["cubic"],
+    'trial': [1] #'trial': [1, 2, 3, 4, 5]
+}
+```
+The parameters are the same with the figure above and they are subject to adjustment based on individual preferences or requirements. 
+
+The original results were obtained from 5 trials per experiment, with each experiment lasting 60 seconds. To save time, you may consider reducing the experiment duration to 10 seconds. While this shorter duration might not be sufficient for accurate measurements, it should provide a general idea about the throughput share and relative queue delay. In this scenario, the total time required would be approximately 1 hour. Therefore, ensure that the experiment duration is adjusted in the notebook as follows.
+
+```
+d = 10 #duration in seconds
+```
+As mentioned before, the paramaters and the experiment duration could be changed as needed.
+
+Upon completion of the notebook execution, the plots will be saved and displayed at the end of the notebook.
