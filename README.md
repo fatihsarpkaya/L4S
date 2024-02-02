@@ -71,7 +71,7 @@ In this notebook, the experiment parameters are chosen as following.
 ```
 The parameters are the same with the figure above and they are subject to adjustment based on individual preferences or requirements. 
 
-The original results were obtained from 5 trials per experiment, with each experiment lasting 60 seconds. To save time, you may consider reducing the experiment duration to 10 seconds. While this shorter duration might not be sufficient for accurate measurements, it should provide a general idea about the throughput share and relative queue delay. In this scenario, the total time required would be approximately 1 hour. Therefore, ensure that the experiment duration is adjusted in the notebook as follows.
+The original results were obtained from 5 trials per experiment, with each experiment lasting 60 seconds. To save time, you may consider reducing the experiment duration to 10 seconds. While this shorter duration might not be sufficient for accurate measurements, it should provide a general idea about the throughput share and relative queue delay. In this scenario, the total time required would be approximately 1 hour. In order to do this, ensure that the experiment duration is adjusted in the notebook as follows.
 
 ```
 d = 10 #duration in seconds
