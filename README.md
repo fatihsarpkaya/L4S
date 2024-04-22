@@ -9,9 +9,7 @@ To run this experiment on [FABRIC](https://fabric-testbed.net), you should have 
 
 ## Reproducing the figures using our experiment data
 
-[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)]([https://colab.research.google.com/github/weiji14/deepbedmap/](https://colab.research.google.com/drive/1A_0-mLgEVr4zma1-VdYhWUUVzcR6hYfk?usp=sharing)]
-
-You can use our experiment data directly to generate the figures in our replication paper. 
+You can use our experiment data directly to generate the figures in our replication paper. [Colab](https://colab.research.google.com/drive/1A_0-mLgEVr4zma1-VdYhWUUVzcR6hYfk?usp=sharing)
 
 ## Run my Experiment
 
