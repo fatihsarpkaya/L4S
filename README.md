@@ -6,6 +6,11 @@ In this experiment, we will see how two types of TCP congestion control mechanis
 
 To run this experiment on [FABRIC](https://fabric-testbed.net), you should have a FABRIC account with keys configured, and be part of a FABRIC project. You will need to have set up SSH keys and understand how to use the Jupyter interface in FABRIC.
 
+
+## Reproducing the figures using our experiment data
+
+You can use our experiment data directly to generate the figures in our replication paper. [Open In Colab](https://colab.research.google.com/drive/1A_0-mLgEVr4zma1-VdYhWUUVzcR6hYfk?usp=sharing)
+
 ## Run my Experiment
 
 To reproduce our experiments on FABRIC, log in to the FABRIC testbed's JupyterHub environment. Open a new terminal from the launcher, and run:
