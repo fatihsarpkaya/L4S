@@ -53,7 +53,7 @@ Key challenges include:
 
 FABRIC's Jupyter notebook interface, combined with its Python library and some of our own tricks, makes it much easier to manage and streamline this process. In this section, we will highlight a few of these methods.
 
-### Generate list of full factorial experiments in notebook and Allow stop/resume experiments in Jupyter
+### Generate list of full factorial experiments in notebook 
 
 ```
  exp_factors = {
@@ -97,6 +97,8 @@ for factor_l in factor_lists:
 ```
 
 In our notebook (as shown above), we first set up the environment and generate the complete list of experiments before executing any. Each experiment is represented as a dictionary containing all the factor values, and we iterate through this list systematically. When running each experiment with the given factors, we ensure that all the factor values are included in the output file names for easy identification and organization. 
+
+### Allow stop/resume experiments in Jupyter
 
 It is also crucial to be able to stop and resume experiments, as they won’t be able to run within a single Jupyter session. The Jupyter Hub server doesn’t stay active for extended periods, and while FABRIC supports long-term access with tokens, the Jupyter server itself may not survive for that long. Additionally, your FABRIC access token also expires after a certain time.
 
