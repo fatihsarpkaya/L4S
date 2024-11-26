@@ -1,4 +1,4 @@
-This repository contains the artifacts for the paper '[To switch or not to switch to TCP Prague? Incentives for adoption in a partial L4S deployment](https://doi.org/10.1145/3673422.3674896),' accepted for presentation at the ANRW '24 workshop.
+This repository contains the artifacts for the paper [To switch or not to switch to TCP Prague? Incentives for adoption in a partial L4S deployment](https://doi.org/10.1145/3673422.3674896), accepted for presentation at the ANRW '24 workshop.
 
 # L4S
 
