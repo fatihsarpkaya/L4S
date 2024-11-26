@@ -1,3 +1,5 @@
+This repository contains the artifacts for the paper '[To switch or not to switch to TCP Prague? Incentives for adoption in a partial L4S deployment]([https://fabric-testbed.net](https://doi.org/10.1145/3673422.3674896)),' accepted at the ANRW '24 workshop.
+
 # L4S
 
 Low Latency, Low Loss, Scalable Throughput (L4S) seeks to reduce network latency by introducing new protocols for congestion control and queue management at hosts, servers, and routers throughout the Internet. However, because it requires such widespread changes, it is critical to understand the practical implications of deploying this technology incrementally in diverse network environments. 
