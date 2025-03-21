@@ -14,7 +14,7 @@ In the paper, the size of the DualPI2 queue is configured with the default param
 
 ## Important Note on BBRv2 ECN Implementation
 
-In our implementation, we identified that the BBRv2 receiver applies classic ECN marking instead of the DCTCP-style marking that BBRv2 expects. A more detailed analysis of this difference is provided in our another paper: [To adopt or not to adopt L4S-compatible congestion control? Understanding performance in a partial L4S deployment](https://doi.org/10.48550/arXiv.2411.10952).
+In our implementation, we identified that the BBRv2 receiver applies classic ECN marking instead of the DCTCP-style marking that BBRv2 expects. A more detailed analysis of this difference is provided in our another paper: [To adopt or not to adopt L4S-compatible congestion control? Understanding performance in a partial L4S deployment](https://link.springer.com/chapter/10.1007/978-3-031-85960-1_10).
 
 ## Reproducing the figures using our experiment data
 
