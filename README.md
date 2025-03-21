@@ -8,6 +8,13 @@ In this experiment, we will see how two types of TCP congestion control mechanis
 
 To run this experiment on [FABRIC](https://fabric-testbed.net), you should have a FABRIC account with keys configured, and be part of a FABRIC project. You will need to have set up SSH keys and understand how to use the Jupyter interface in FABRIC.
 
+## Important Note on DualPI2 Configuration in the Results
+
+In the paper, the size of the DualPI2 queue is configured with the default parameter of 10,000 packets (approximately 12 BDP in our settings), even though the heatmaps show different buffer sizes on the x-axis. Since the ECN threshold is set to 5 ms in the classic queue and 1 ms in the low-latency queue — and non-ECN packets are dropped — adjusting the queue size for lower BDP values does not significantly affect the results for CUBIC and BBRv1.
+
+## Important Note on BBRv2 ECN Implementation
+
+In our implementation, we identified that the BBRv2 receiver applies classic ECN marking instead of the DCTCP-style marking that BBRv2 expects. A more detailed analysis of this difference is provided in our another paper: [To adopt or not to adopt L4S-compatible congestion control? Understanding performance in a partial L4S deployment](https://doi.org/10.48550/arXiv.2411.10952).
 
 ## Reproducing the figures using our experiment data
 
